@@ -1,0 +1,21 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.container div {
+  margin: 1em 0;
+  border: 1px solid white;
+  color: white;
+  width: 70%;
+  text-align: center;
+  cursor: pointer;
+  padding: 0.5em
+}
+
+.codeSection {
+  width: 80%;
+  overflow: scroll;
+}
