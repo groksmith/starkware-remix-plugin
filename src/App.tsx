@@ -10,15 +10,6 @@ function App() {
   const [compiledContract, setContract] = useState<Record<string, any> | null>(null)
   const [error, setError] = useState<any>(null)
 
-  // useEffect(() => {
-  //   console.log(client)
-  //   client.onload(async () => {
-  //     const data = await client.call('fileManager', 'readFile', 'ballot.sol')
-  //     console.log('data', data)
-  //   })
-  // })
-
-
   const handleCompile = async () => {
     const currentFile = await client.call('fileManager', 'getCurrentFile')
     const data = await client.call('fileManager', 'readFile', currentFile)
