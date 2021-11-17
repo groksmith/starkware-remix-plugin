@@ -14,7 +14,7 @@ type ContractType = {
 
 function App() {
   const [compiledContract, setContract] = useState<ContractType | null>(null)
-  const [error, setError] = useState<any>(null)
+  const [error, setError] = useState<any>(true)
   const [hasDeployed, setDeployStatus] = useState(false)
   const [hasCreatedScript, setScriptStatus] = useState(false)
 
@@ -85,7 +85,12 @@ function App() {
   }
 
   if(error) {
-    return <h3>Error while compiling</h3>
+    return (
+      <div className="container">
+        <h4>Error while compiling</h4>
+        <div role="button" onClick={() => window.location.reload()}>Reload plugin</div>
+      </div>
+     )
   }
 
   return (
