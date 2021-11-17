@@ -16,10 +16,12 @@ function App() {
   const [compiledContract, setContract] = useState<ContractType | null>(null)
   const [error, setError] = useState<any>(null)
   const [hasDeployed, setDeployStatus] = useState(false)
+  const [hasCreatedScript, setScriptStatus] = useState(false)
 
   const handleCompile = async () => {
     setDeployStatus(false)
     setContract(null)
+    setScriptStatus(false)
 
     const currentFile = await client.call('fileManager', 'getCurrentFile')
     const data = await client.call('fileManager', 'readFile', currentFile)
@@ -66,6 +68,22 @@ function App() {
       .catch(setError)
   }
 
+  const handleScript = () => {
+    client.call('fileManager', 'writeFile', './scripts/deploy.js', `
+// Right click on the script name and hit "Run" to execute
+(async () => {
+    try {
+        console.log('Running deployWithEthers script...')
+    
+        starknet.deployContract(${JSON.stringify(compiledContract?.contract_definition)})
+        console.log('Deployment successful.')
+    } catch (e) {
+        console.log(e.message)
+    }
+})()
+    `).then(() => setScriptStatus(true))
+  }
+
   if(error) {
     return <h3>Error while compiling</h3>
   }
@@ -76,12 +94,15 @@ function App() {
       {compiledContract ? (
         <>
           <h3>Compiled</h3>
-          <div className="codeSection">{compiledContract.contract_definition.program}</div>
           <div role="button" onClick={handleDeploy}>Deploy</div>
         </>
       ) : null}
 
       {hasDeployed ?  <h3>Deployed!</h3> : null}
+
+      <div role="button" onClick={handleScript}>Create deploy script</div>
+
+      {hasCreatedScript ? <p>Created script at ./scripts/deploy.js</p> : null}
     </div>  
   )
 }
