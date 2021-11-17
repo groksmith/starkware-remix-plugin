@@ -21,6 +21,7 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
+    "postinstall": "patch-package",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -45,6 +46,8 @@
     ]
   },
   "devDependencies": {
-    "@types/crypto-js": "^4.0.2"
+    "@types/crypto-js": "^4.0.2",
+    "patch-package": "^6.4.7",
+    "postinstall-postinstall": "^2.1.0"
   }
 }
