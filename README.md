@@ -6,7 +6,7 @@ Ways to run the plugin on the local machine
 
 `yarn install`
 
-`yarn dev`
+`yarn start`
 
 Then it will run the plugin on `localhost:3000`
 Go to the Remix plugin section, add new plugin from localhost, name it, and inside the URL section paste `https://localhost:3000`, check `iframe` and `Side Panel`. 
