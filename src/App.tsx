@@ -14,7 +14,7 @@ type ContractType = {
 
 function App() {
   const [compiledContract, setContract] = useState<ContractType | null>(null)
-  const [error, setError] = useState<any>(true)
+  const [error, setError] = useState<any>(false)
   const [hasDeployed, setDeployStatus] = useState(false)
   const [hasCreatedScript, setScriptStatus] = useState(false)
 
