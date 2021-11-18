@@ -2864,10 +2864,15 @@ bluebird@^3.5.5:
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.7.2.tgz#9f229c15be272454ffa973ace0dbee79a1b0c36f"
   integrity sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==
 
-bn.js@^4.0.0, bn.js@^4.1.0, bn.js@^4.11.9:
+bn.js@^4.0.0, bn.js@^4.1.0:
   version "4.11.9"
   resolved "https://registry.yarnpkg.com/bn.js/-/bn.js-4.11.9.tgz#26d556829458f9d1e81fc48952493d0ba3507828"
   integrity sha512-E6QoYqCKZfgatHTdHzs1RRKP7ip4vvm+EyRUeE2RF0NblwVvb0p6jSVeNTOFxPn26QXN2o6SMfNxKp6kU8zQaw==
+
+bn.js@^4.11.9:
+  version "4.12.0"
+  resolved "https://registry.yarnpkg.com/bn.js/-/bn.js-4.12.0.tgz#775b3f278efbb9718eec7361f483fb36fbbfea88"
+  integrity sha512-c98Bf3tPniI+scsdk237ku1Dc3ujXQTSgyiPUDEOe7tRkhrqridvh8klBv0HCEso1OLOYcHuCv/cS6DNxKH+ZA==
 
 bn.js@^5.0.0, bn.js@^5.1.1:
   version "5.1.3"
@@ -10283,9 +10288,9 @@ stackframe@^1.1.1:
   integrity sha512-GrdeshiRmS1YLMYgzF16olf2jJ/IzxXY9lhKOskuVziubpTYcYqyOwYeJKzQkwy7uN0fYSsbsC4RQaXf9LCrYA==
 
 starknet@^1.5.5:
-  version "1.5.5"
-  resolved "https://registry.yarnpkg.com/starknet/-/starknet-1.5.5.tgz#cd3c551e73467b603883196a7358c134a3ce8699"
-  integrity sha512-AwqfahbIpZzG3MqaoH/ydz0m5ptCh81/zNGfXaHrkh/cbjfkJtBbonmhsGBN9UBW3daiEhSKS5M71dOsesv8jw==
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/starknet/-/starknet-1.7.0.tgz#100e53dedab6531f5e000e2f5c2042c0e38f6579"
+  integrity sha512-qf8l9AC2xff5mNbgkbiOCPqBASjmHASnhrTwS9FNUiJZhBMnYH3OgEOfM4GdXzxh8vINKWnX/Kor7wuQZbUZsw==
   dependencies:
     axios "^0.23.0"
     bn.js "^5.2.0"

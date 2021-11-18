@@ -1,6 +1,6 @@
 import { createClient } from '@remixproject/plugin-webview'
 import { PluginClient } from '@remixproject/plugin'
-import { CompiledContract } from 'starknet';
+import { CompiledContract, defaultProvider } from 'starknet';
 import Crypto from 'crypto-js'
 import { useState } from 'react'
 import './App.css'
@@ -48,24 +48,24 @@ function App() {
       return
     }
     
-    // deployContract(compiledContract.contract_definition, [] , `0x0${Crypto.lib.WordArray.random(128 / 8).toString()}`)
-    //   .then(() => setDeployStatus(true))
-    //   .catch(setError)
-
-    fetch('https://alpha3.starknet.io/gateway/add_transaction', {
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-      },
-      body: JSON.stringify({
-        type: "DEPLOY",
-        contract_address_salt: `0x0${Crypto.lib.WordArray.random(128 / 8).toString()}`,
-        contract_definition: compiledContract.contract_definition,
-        constructor_calldata : []
-      })
-    })
+    defaultProvider.deployContract(compiledContract.contract_definition)
       .then(() => setDeployStatus(true))
       .catch(setError)
+
+    // fetch('https://alpha3.starknet.io/gateway/add_transaction', {
+    //   method: 'POST',
+    //   headers: {
+    //     accept: 'application/json',
+    //   },
+    //   body: JSON.stringify({
+    //     type: "DEPLOY",
+    //     contract_address_salt: `0x0${Crypto.lib.WordArray.random(128 / 8).toString()}`,
+    //     contract_definition: compiledContract.contract_definition,
+    //     constructor_calldata : []
+    //   })
+    // })
+    //   .then(() => setDeployStatus(true))
+    //   .catch(setError)
   }
 
   const handleScript = () => {
