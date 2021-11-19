@@ -1,7 +1,6 @@
 import { createClient } from '@remixproject/plugin-webview'
 import { PluginClient } from '@remixproject/plugin'
-import { CompiledContract, defaultProvider, json } from 'starknet';
-import Crypto from 'crypto-js'
+import { CompiledContract, defaultProvider } from 'starknet';
 import { useState } from 'react'
 import './App.css'
 import { randomAddress } from 'starknet/dist/utils/stark';
@@ -57,21 +56,6 @@ function App() {
     })
       .then(() => setDeployStatus(true))
       .catch(setError)
-
-    // fetch('https://alpha4.starknet.io/gateway/add_transaction', {
-    //   method: 'POST',
-    //   headers: {
-    //     accept: 'application/json',
-    //   },
-    //   body: JSON.stringify({
-    //     type: "DEPLOY",
-    //     contract_address_salt: `0x0${Crypto.lib.WordArray.random(128 / 8).toString()}`,
-    //     contract_definition: compiledContract.contract_definition,
-    //     constructor_calldata : []
-    //   })
-    // })
-    //   .then(() => setDeployStatus(true))
-    //   .catch(setError)
   }
 
   const handleScript = () => {
@@ -81,7 +65,12 @@ function App() {
     try {
         console.log('Running deployWithEthers script...')
     
-        starknet.deployContract(${JSON.stringify(compiledContract?.contract_definition)})
+        starknet.defaultProvider.addTransaction({
+          type: 'DEPLOY',
+          contract_definition: ${JSON.stringify(compiledContract!.contract_definition)},
+          contract_address_salt: '${randomAddress()}',
+          constructor_calldata: []
+        })
         console.log('Deployment successful.')
     } catch (e) {
         console.log(e.message)
@@ -111,7 +100,7 @@ function App() {
 
       {hasDeployed ?  <h3>Deployed!</h3> : null}
 
-      <div role="button" onClick={handleScript}>Create deploy script</div>
+      {compiledContract ? <div role="button" onClick={handleScript}>Create deploy script</div> : null}
 
       {hasCreatedScript ? <p>Created script at ./scripts/deploy.js</p> : null}
     </div>  
