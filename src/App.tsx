@@ -1,9 +1,10 @@
 import { createClient } from '@remixproject/plugin-webview'
 import { PluginClient } from '@remixproject/plugin'
-import { CompiledContract, defaultProvider } from 'starknet';
+import { CompiledContract, defaultProvider, json } from 'starknet';
 import Crypto from 'crypto-js'
 import { useState } from 'react'
 import './App.css'
+import { randomAddress } from 'starknet/dist/utils/stark';
 
 const client = createClient(new PluginClient())
 
@@ -37,7 +38,7 @@ function App() {
         code: data
       })
     })
-    .then(res => res.json())
+    .then(x => x.json())
     .then(setContract)
     .catch(setError)
   }
@@ -47,12 +48,17 @@ function App() {
     if(!compiledContract) {
       return
     }
-    
-    defaultProvider.deployContract(compiledContract.contract_definition)
+
+    defaultProvider.addTransaction({
+      type: 'DEPLOY',
+      contract_definition: compiledContract.contract_definition,
+      contract_address_salt: randomAddress(),
+      constructor_calldata: []
+    })
       .then(() => setDeployStatus(true))
       .catch(setError)
 
-    // fetch('https://alpha3.starknet.io/gateway/add_transaction', {
+    // fetch('https://alpha4.starknet.io/gateway/add_transaction', {
     //   method: 'POST',
     //   headers: {
     //     accept: 'application/json',
