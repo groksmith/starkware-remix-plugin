@@ -15,15 +15,28 @@ type ContractType = {
 function App() {
   const [compiledContract, setContract] = useState<ContractType | null>(null)
   const [error, setError] = useState<any>(false)
-  const [hasDeployed, setDeployStatus] = useState(false)
+  const [deployIsLoading, setLoading] = useState(false)
+  const [deployedContract, setDeployedContract] = useState<string | undefined>(undefined)
   const [hasCreatedScript, setScriptStatus] = useState(false)
+  const [noFileSelected, setFileSelection] = useState(false)
 
   const handleCompile = async () => {
-    setDeployStatus(false)
+    setLoading(false)
     setContract(null)
     setScriptStatus(false)
+    setFileSelection(false)
+    setDeployedContract(undefined)
 
-    const currentFile = await client.call('fileManager', 'getCurrentFile')
+    let currentFile;
+
+    try {
+      currentFile = await client.call('fileManager', 'getCurrentFile')
+      
+    } catch (error) {
+      setFileSelection(true)
+      return 
+    }
+
     const data = await client.call('fileManager', 'readFile', currentFile)
     
 
@@ -47,30 +60,50 @@ function App() {
     if(!compiledContract) {
       return
     }
-
+    setLoading(true)
     defaultProvider.addTransaction({
       type: 'DEPLOY',
       contract_definition: compiledContract.contract_definition,
       contract_address_salt: randomAddress(),
       constructor_calldata: []
     })
-      .then(() => setDeployStatus(true))
+      .then((res) => {
+        setLoading(false)
+        setDeployedContract(res.address)
+      })
       .catch(setError)
   }
 
-  const handleScript = () => {
+  const handleScript = async () => {
+    let dir = null;
+
+    try {
+      dir = await client.call('fileManager', 'readdir', './compiled_cairo_artfacts');
+    } catch (error) {
+      console.log(error)
+    }
+
+    if(!dir) {
+      dir = await client.call('fileManager', 'mkdir', 'compiled_cairo_artfacts');
+      console.log(dir)
+    }
+
+    await client.call('fileManager', 'writeFile', 'compiled_cairo_artfacts/contract.json', JSON.stringify(compiledContract));
+
     client.call('fileManager', 'writeFile', './scripts/deploy.js', `
 // Right click on the script name and hit "Run" to execute
 (async () => {
     try {
-        console.log('Running deployWithEthers script...')
-    
-        starknet.defaultProvider.addTransaction({
+        console.log('deploy to starknet...')
+        const compiledCairoContract = await remix.call('fileManager', 'readFile', 'compiled_cairo_artfacts/contract.json');
+        const compiledContract = starknet.json.parse(compiledCairoContract);
+        const res = await starknet.defaultProvider.addTransaction({
           type: 'DEPLOY',
-          contract_definition: ${JSON.stringify(compiledContract!.contract_definition)},
+          contract_definition: compiledContract.contract_definition,
           contract_address_salt: '${randomAddress()}',
           constructor_calldata: []
         })
+        console.log('Deployed contract address: ', res.address)
         console.log('Deployment successful.')
     } catch (e) {
         console.log(e.message)
@@ -98,11 +131,20 @@ function App() {
         </>
       ) : null}
 
-      {hasDeployed ?  <h3>Deployed!</h3> : null}
+      {deployIsLoading ? <p>Deploying...</p> : null}
+
+      {deployedContract && !deployIsLoading ? 
+        <>
+          <p>Deployed contract address</p>
+          <p className="contractAddress">{deployedContract}</p>
+        </>
+      : null}
 
       {compiledContract ? <div role="button" onClick={handleScript}>Create deploy script</div> : null}
 
       {hasCreatedScript ? <p>Created script at ./scripts/deploy.js</p> : null}
+
+      {noFileSelected ? <p>Please select file containing Cairo contract</p> : null}
     </div>  
   )
 }

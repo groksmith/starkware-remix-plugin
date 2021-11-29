@@ -19,3 +19,10 @@
   width: 80%;
   overflow: scroll;
 }
+
+.contractAddress {
+  display: flex;
+  width: 80%;
+  align-items: center;
+  overflow: auto;
+}
