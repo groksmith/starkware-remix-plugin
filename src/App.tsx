@@ -78,24 +78,24 @@ function App() {
     let dir = null;
 
     try {
-      dir = await client.call('fileManager', 'readdir', './compiled_cairo_artfacts');
+      dir = await client.call('fileManager', 'readdir', './compiled_cairo_artifacts');
     } catch (error) {
       console.log(error)
     }
 
     if(!dir) {
-      dir = await client.call('fileManager', 'mkdir', 'compiled_cairo_artfacts');
+      dir = await client.call('fileManager', 'mkdir', 'compiled_cairo_artifacts');
       console.log(dir)
     }
 
-    await client.call('fileManager', 'writeFile', 'compiled_cairo_artfacts/contract.json', JSON.stringify(compiledContract));
+    await client.call('fileManager', 'writeFile', 'compiled_cairo_artifacts/contract.json', JSON.stringify(compiledContract));
 
     client.call('fileManager', 'writeFile', './scripts/deploy.js', `
 // Right click on the script name and hit "Run" to execute
 (async () => {
     try {
         console.log('deploy to starknet...')
-        const compiledCairoContract = await remix.call('fileManager', 'readFile', 'compiled_cairo_artfacts/contract.json');
+        const compiledCairoContract = await remix.call('fileManager', 'readFile', 'compiled_cairo_artifacts/contract.json');
         const compiledContract = starknet.json.parse(compiledCairoContract);
         const res = await starknet.defaultProvider.addTransaction({
           type: 'DEPLOY',
