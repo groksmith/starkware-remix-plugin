@@ -1,11 +1,13 @@
 import { createClient } from '@remixproject/plugin-webview'
 import { PluginClient } from '@remixproject/plugin'
-import { CompiledContract, defaultProvider } from 'starknet';
+import { CompiledContract, defaultProvider, Provider } from 'starknet';
 import { useState } from 'react'
 import './App.css'
 import { randomAddress } from 'starknet/dist/utils/stark';
 
 const client = createClient(new PluginClient())
+
+type NetworkName = 'mainnet-alpha' | 'georli-alpha';
 
 type ContractType = {
   contract_definition: CompiledContract,
@@ -19,6 +21,7 @@ function App() {
   const [deployedContract, setDeployedContract] = useState<string | undefined>(undefined)
   const [hasCreatedScript, setScriptStatus] = useState(false)
   const [noFileSelected, setFileSelection] = useState(false)
+  const [selectedNetwork, setSelectedNetwork] = useState<NetworkName>('mainnet-alpha')
 
   const handleCompile = async () => {
     setLoading(false)
@@ -61,7 +64,11 @@ function App() {
       return
     }
     setLoading(true)
-    defaultProvider.addTransaction({
+    const provider = new Provider({
+      network: selectedNetwork,
+    })
+
+    provider.addTransaction({
       type: 'DEPLOY',
       contract_definition: compiledContract.contract_definition,
       contract_address_salt: randomAddress(),
@@ -97,12 +104,27 @@ function App() {
         console.log('deploy to starknet...')
         const compiledCairoContract = await remix.call('fileManager', 'readFile', 'compiled_cairo_artifacts/contract.json');
         const compiledContract = starknet.json.parse(compiledCairoContract);
-        const res = await starknet.defaultProvider.addTransaction({
+        
+        const provider = new starknet.Provider({
+          network: 'mainnet-alpha' // mainnet-alpha or georli-alpha
+        })
+
+        const res = await provider.addTransaction({
           type: 'DEPLOY',
           contract_definition: compiledContract.contract_definition,
           contract_address_salt: '${randomAddress()}',
           constructor_calldata: []
         })
+
+        //  const methodResponse = await callContract({
+        //    contract_address: res.address,
+        //    entry_point_selector: getSelectorFromName("YOUR_FUNCTION_NAME"),
+        //    calldata: ["1"],
+        //  });
+
+        // const result = methodResponse.result[0];
+        // result contains the return value of the method you gave to callContract
+
         console.log('Deployed contract address: ', res.address)
         console.log('Deployment successful.')
     } catch (e) {
@@ -127,6 +149,10 @@ function App() {
       {compiledContract ? (
         <>
           <h3>Compiled</h3>
+          <select value={selectedNetwork} onChange={(e) => setSelectedNetwork(e.target.value as NetworkName)}>
+            <option value="mainnet-alpha">mainnet-alpha</option>
+            <option value="georli-alpha">georli-alpha</option>
+          </select>
           <div role="button" onClick={handleDeploy}>Deploy</div>
         </>
       ) : null}
