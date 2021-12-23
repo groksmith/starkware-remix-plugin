@@ -1,6 +1,6 @@
 import { createClient } from '@remixproject/plugin-webview'
 import { PluginClient } from '@remixproject/plugin'
-import { CompiledContract, defaultProvider, Provider } from 'starknet';
+import { CompiledContract, Provider } from 'starknet';
 import { useState } from 'react'
 import './App.css'
 import { randomAddress } from 'starknet/dist/utils/stark';
@@ -22,6 +22,7 @@ function App() {
   const [hasCreatedScript, setScriptStatus] = useState(false)
   const [noFileSelected, setFileSelection] = useState(false)
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkName>('mainnet-alpha')
+  const [compiling, setCompilingStatus] = useState(false);
 
   const handleCompile = async () => {
     setLoading(false)
@@ -42,7 +43,7 @@ function App() {
 
     const data = await client.call('fileManager', 'readFile', currentFile)
     
-
+    setCompilingStatus(true);
     fetch('https://2uuf49xjkk.execute-api.us-east-2.amazonaws.com/prod/cairo', {
       method: 'POST',
       headers: {
@@ -56,6 +57,7 @@ function App() {
     .then(x => x.json())
     .then(setContract)
     .catch(setError)
+    .finally(() => setCompilingStatus(false))
   }
 
 
@@ -145,14 +147,19 @@ function App() {
 
   return (
     <div className="container">
-      <div role="button" onClick={handleCompile}>Compile current file</div>
+      <h3>Cairo compiler plugin</h3>
+      <div role="button" onClick={handleCompile}>{
+        compiling ? 'Compiling...' : 'Compile current file'
+      }</div>
       {compiledContract ? (
         <>
-          <h3>Compiled</h3>
-          <select value={selectedNetwork} onChange={(e) => setSelectedNetwork(e.target.value as NetworkName)}>
-            <option value="mainnet-alpha">mainnet-alpha</option>
-            <option value="georli-alpha">georli-alpha</option>
-          </select>
+          <div className='networkSelet'>
+            <label>Starknet network</label>
+            <select value={selectedNetwork} onChange={(e) => setSelectedNetwork(e.target.value as NetworkName)}>
+              <option value="mainnet-alpha">mainnet-alpha</option>
+              <option value="georli-alpha">georli-alpha</option>
+            </select>
+          </div>
           <div role="button" onClick={handleDeploy}>Deploy</div>
         </>
       ) : null}
