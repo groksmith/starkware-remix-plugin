@@ -147,7 +147,6 @@ function App() {
 
   return (
     <div className="container">
-      <h3>Cairo compiler plugin</h3>
       <div role="button" onClick={handleCompile}>{
         compiling ? 'Compiling...' : 'Compile current file'
       }</div>
