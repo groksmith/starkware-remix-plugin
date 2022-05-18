@@ -23,7 +23,7 @@ label {
   text-transform: uppercase;
 }
 
-.networkSelet {
+.networkSelect {
   display: flex;
   flex-direction: column;
   width: 100%;

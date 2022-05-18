@@ -1,71 +1,73 @@
 import { createClient } from '@remixproject/plugin-webview'
 import { PluginClient } from '@remixproject/plugin'
-import { CompiledContract, Provider } from 'starknet';
+import { Provider, } from 'starknet';
 import { useState } from 'react'
-import './App.css'
 import { randomAddress } from 'starknet/dist/utils/stark';
+import { NetworkName, ContractType, DeployScriptContent } from './helpers/common';
+import './App.css'
 
-const client = createClient(new PluginClient())
+const remixClient = createClient(new PluginClient())
+const cairoHostUrl : string = process.env.REACT_APP_CAIRO_HOST_URL || '';
+const deployScriptDirectory = './scripts/deploy.js';
+const contractDirectory = 'compiled_cairo_artifacts/contract.json';
 
-type NetworkName = 'mainnet-alpha' | 'georli-alpha';
-
-type ContractType = {
-  contract_definition: CompiledContract,
-  version: number
-}
 
 function App() {
-  const [compiledContract, setContract] = useState<ContractType | null>(null)
-  const [error, setError] = useState<any>(false)
-  const [deployIsLoading, setLoading] = useState(false)
-  const [deployedContract, setDeployedContract] = useState<string | undefined>(undefined)
-  const [hasCreatedScript, setScriptStatus] = useState(false)
-  const [noFileSelected, setFileSelection] = useState(false)
-  const [selectedNetwork, setSelectedNetwork] = useState<NetworkName>('mainnet-alpha')
+  const [compiledContract, setContract] = useState<ContractType | null>(null);
+  const [error, setError] = useState<any>(false);
+  const [deployIsLoading, setLoading] = useState(false);
+  const [deployedContract, setDeployedContract] = useState<string | undefined>(undefined);
+  const [hasCreatedScript, setScriptStatus] = useState(false);
+  const [noFileSelected, setFileSelection] = useState(false);
+  const [selectedNetwork, setSelectedNetwork] = useState<NetworkName>('mainnet-alpha');
   const [compiling, setCompilingStatus] = useState(false);
 
-  const handleCompile = async () => {
-    setLoading(false)
-    setContract(null)
-    setScriptStatus(false)
-    setFileSelection(false)
-    setDeployedContract(undefined)
+  const compileContract = async () => {
+    setLoading(false);
+    setContract(null);
+    setScriptStatus(false);
+    setFileSelection(false);
+    setDeployedContract(undefined);
 
-    let currentFile;
+    let currentFile: string;
 
     try {
-      currentFile = await client.call('fileManager', 'getCurrentFile')
-      
+      currentFile = await remixClient.call('fileManager', 'getCurrentFile');
     } catch (error) {
-      setFileSelection(true)
-      return 
+      setFileSelection(true);
+      return;
     }
 
-    const data = await client.call('fileManager', 'readFile', currentFile)
-    
+    const currentFileContent = await remixClient.call('fileManager', 'readFile', currentFile);
+
     setCompilingStatus(true);
-    fetch('https://2uuf49xjkk.execute-api.us-east-2.amazonaws.com/prod/cairo', {
+    runContractCompilation(currentFileContent);
+  }
+
+  const runContractCompilation = (currentFileContent: string) => {
+    fetch(cairoHostUrl, {
       method: 'POST',
       headers: {
         accept: 'application/json',
       },
       body: JSON.stringify({
         action: "compile-contract",
-        code: data
+        code: currentFileContent
       })
     })
-    .then(x => x.json())
+    .then(response => response.json())
     .then(setContract)
     .catch(setError)
-    .finally(() => setCompilingStatus(false))
+    .finally(() => setCompilingStatus(false));
   }
 
-
-  const handleDeploy = async () => {
+  const deployContract = () => {
     if(!compiledContract) {
-      return
+      return;
     }
-    setLoading(true)
+
+    setLoading(true);
+
     const provider = new Provider({
       network: selectedNetwork,
     })
@@ -76,64 +78,17 @@ function App() {
       contract_address_salt: randomAddress(),
       constructor_calldata: []
     })
-      .then((res) => {
-        setLoading(false)
-        setDeployedContract(res.address)
-      })
-      .catch(setError)
+    .then((res) => {
+      setLoading(false);
+      setDeployedContract(res.address);
+    })
+    .catch(setError);
   }
 
-  const handleScript = async () => {
-    let dir = null;
+  const deployScript = async () => {
+    await remixClient.call('fileManager', 'writeFile', contractDirectory, JSON.stringify(compiledContract));
 
-    try {
-      dir = await client.call('fileManager', 'readdir', './compiled_cairo_artifacts');
-    } catch (error) {
-      console.log(error)
-    }
-
-    if(!dir) {
-      dir = await client.call('fileManager', 'mkdir', 'compiled_cairo_artifacts');
-      console.log(dir)
-    }
-
-    await client.call('fileManager', 'writeFile', 'compiled_cairo_artifacts/contract.json', JSON.stringify(compiledContract));
-
-    client.call('fileManager', 'writeFile', './scripts/deploy.js', `
-// Right click on the script name and hit "Run" to execute
-(async () => {
-    try {
-        console.log('deploy to starknet...')
-        const compiledCairoContract = await remix.call('fileManager', 'readFile', 'compiled_cairo_artifacts/contract.json');
-        const compiledContract = starknet.json.parse(compiledCairoContract);
-        
-        const provider = new starknet.Provider({
-          network: 'mainnet-alpha' // mainnet-alpha or georli-alpha
-        })
-
-        const res = await provider.addTransaction({
-          type: 'DEPLOY',
-          contract_definition: compiledContract.contract_definition,
-          contract_address_salt: '${randomAddress()}',
-          constructor_calldata: []
-        })
-
-        //  const methodResponse = await callContract({
-        //    contract_address: res.address,
-        //    entry_point_selector: getSelectorFromName("YOUR_FUNCTION_NAME"),
-        //    calldata: ["1"],
-        //  });
-
-        // const result = methodResponse.result[0];
-        // result contains the return value of the method you gave to callContract
-
-        console.log('Deployed contract address: ', res.address)
-        console.log('Deployment successful.')
-    } catch (e) {
-        console.log(e.message)
-    }
-})()
-    `).then(() => setScriptStatus(true))
+    remixClient.call('fileManager', 'writeFile', deployScriptDirectory, DeployScriptContent).then(() => setScriptStatus(true));
   }
 
   if(error) {
@@ -142,24 +97,24 @@ function App() {
         <h4>Error while compiling</h4>
         <div role="button" onClick={() => window.location.reload()}>Reload plugin</div>
       </div>
-     )
+    )
   }
 
   return (
     <div className="container">
-      <div role="button" onClick={handleCompile}>{
+      <div role="button" onClick={compileContract}>{
         compiling ? 'Compiling...' : 'Compile current file'
       }</div>
       {compiledContract ? (
         <>
-          <div className='networkSelet'>
-            <label>Starknet network</label>
-            <select value={selectedNetwork} onChange={(e) => setSelectedNetwork(e.target.value as NetworkName)}>
+          <div className='networkSelect'>
+            <label>StarkNet network</label>
+            <select value={selectedNetwork} onChange={(event) => setSelectedNetwork(event.target.value as NetworkName)}>
               <option value="mainnet-alpha">mainnet-alpha</option>
-              <option value="georli-alpha">georli-alpha</option>
+              <option value="goerli-alpha">goerli-alpha</option>
             </select>
           </div>
-          <div role="button" onClick={handleDeploy}>Deploy</div>
+          <div role="button" onClick={deployContract}>Deploy</div>
         </>
       ) : null}
 
@@ -172,9 +127,9 @@ function App() {
         </>
       : null}
 
-      {compiledContract ? <div role="button" onClick={handleScript}>Create deploy script</div> : null}
+      {compiledContract ? <div role="button" onClick={deployScript}>Create deploy script</div> : null}
 
-      {hasCreatedScript ? <p>Created script at ./scripts/deploy.js</p> : null}
+      {hasCreatedScript ? <p>Created script at {deployScriptDirectory}</p> : null}
 
       {noFileSelected ? <p>Please select file containing Cairo contract</p> : null}
     </div>  
