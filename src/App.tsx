@@ -16,7 +16,7 @@ const contractDirectory = 'compiled_cairo_artifacts/contract.json';
 function App() {
   const [compiledContract, setContract] = useState<ContractType | null>(null);
   const [compilationError, setCompilationError] = useState<any>(null);
-  const [error, setError] = useState<any>(false);
+  const [deploymentError, setDeploymentError] = useState<any>(false);
   const [deployIsLoading, setLoading] = useState(false);
   const [deployedContract, setDeployedContract] = useState<string | undefined>(undefined);
   const [hasCreatedScript, setScriptStatus] = useState(false);
@@ -59,6 +59,7 @@ function App() {
           code: currentFileContent
         })
       });
+
       const responseData = await response.json();
       setCompilingStatus(false);
       if (responseData.error) {
@@ -72,43 +73,39 @@ function App() {
     }
   }
 
-  const deployContract = () => {
+  const deployContract = async () => {
     if(!compiledContract) {
       return;
     }
 
+    setDeployedContract(undefined);
+    setDeploymentError(null);
     setLoading(true);
 
     const provider = new Provider({
       network: selectedNetwork,
     })
 
-    provider.addTransaction({
-      type: 'DEPLOY',
-      contract_definition: compiledContract.contract_definition,
-      contract_address_salt: randomAddress(),
-      constructor_calldata: []
-    })
-    .then((res) => {
-      setLoading(false);
-      setDeployedContract(res.address);
-    })
-    .catch(setError);
+    try {
+      const response = await provider.addTransaction({
+        type: 'DEPLOY',
+        contract_definition: compiledContract.contract_definition,
+        contract_address_salt: randomAddress(),
+        constructor_calldata: []
+      });
+      
+      setDeployedContract(response.address);
+    } catch (exception: any) {
+      setDeploymentError(exception.response.data.message);
+    }
+
+    setLoading(false);
   }
 
   const deployScript = async () => {
     await remixClient.call('fileManager', 'writeFile', contractDirectory, JSON.stringify(compiledContract));
 
     remixClient.call('fileManager', 'writeFile', deployScriptDirectory, DeployScriptContent).then(() => setScriptStatus(true));
-  }
-
-  if(error) {
-    return (
-      <div className="container">
-        <h4>Error while compiling</h4>
-        <div role="button" onClick={() => window.location.reload()}>Reload plugin</div>
-      </div>
-    )
   }
 
   return (
@@ -144,7 +141,7 @@ function App() {
 
       {noFileSelected ? <p>Please select file containing Cairo contract</p> : null}
 
-      {compilationError ?  <Error message={compilationError} /> : null}
+      {(compilationError || deploymentError) ?  <Error message={compilationError || deploymentError} /> : null}
 
     </div>  
   )
