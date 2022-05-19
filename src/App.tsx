@@ -4,6 +4,7 @@ import { Provider, } from 'starknet';
 import { useState } from 'react'
 import { randomAddress } from 'starknet/dist/utils/stark';
 import { NetworkName, ContractType, DeployScriptContent } from './helpers/common';
+import Error from './components/CompilationError/CompilationError';
 import './App.css'
 
 const remixClient = createClient(new PluginClient())
@@ -14,6 +15,7 @@ const contractDirectory = 'compiled_cairo_artifacts/contract.json';
 
 function App() {
   const [compiledContract, setContract] = useState<ContractType | null>(null);
+  const [compilationError, setCompilationError] = useState<any>(null);
   const [error, setError] = useState<any>(false);
   const [deployIsLoading, setLoading] = useState(false);
   const [deployedContract, setDeployedContract] = useState<string | undefined>(undefined);
@@ -28,6 +30,7 @@ function App() {
     setScriptStatus(false);
     setFileSelection(false);
     setDeployedContract(undefined);
+    setCompilationError(null)
 
     let currentFile: string;
 
@@ -44,21 +47,29 @@ function App() {
     runContractCompilation(currentFileContent);
   }
 
-  const runContractCompilation = (currentFileContent: string) => {
-    fetch(cairoHostUrl, {
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-      },
-      body: JSON.stringify({
-        action: "compile-contract",
-        code: currentFileContent
-      })
-    })
-    .then(response => response.json())
-    .then(setContract)
-    .catch(setError)
-    .finally(() => setCompilingStatus(false));
+  const runContractCompilation = async (currentFileContent: string) => {
+    try {
+      const response = await fetch(cairoHostUrl, {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+        },
+        body: JSON.stringify({
+          action: "compile-contract",
+          code: currentFileContent
+        })
+      });
+      const responseData = await response.json();
+      setCompilingStatus(false);
+      if (responseData.error) {
+        setCompilationError(responseData.error);
+        return;
+      }
+
+      setContract(responseData);
+    } catch(exception) {
+      console.error(exception);
+    }
   }
 
   const deployContract = () => {
@@ -132,6 +143,9 @@ function App() {
       {hasCreatedScript ? <p>Created script at {deployScriptDirectory}</p> : null}
 
       {noFileSelected ? <p>Please select file containing Cairo contract</p> : null}
+
+      {compilationError ?  <Error message={compilationError} /> : null}
+
     </div>  
   )
 }

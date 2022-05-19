@@ -1,0 +1,32 @@
+.cairoErrorBlob {
+  word-break: break-word;
+  border-bottom: 1px solid #3f4455;
+}
+.cairoError {
+  white-space: pre-line;
+  word-wrap: break-word;
+  cursor: pointer;
+  position: relative;
+  margin: 0.5em 0 1em 0;
+  border-radius: 5px;
+  line-height: 20px;
+  padding: 8px 15px
+}
+
+.alertDanger {
+  color: #ff8a8a;
+  background: #402938;
+  border: 1px solid #572c38;
+}
+
+pre {
+  white-space: pre-line;
+  overflow-y: hidden;
+  overflow-x:auto ;
+  background-color: transparent;
+  margin: 0;
+  font-size: 12px;
+  border: 0 none;
+  padding: 0;
+  border-radius: 0;
+}
