@@ -108,7 +108,7 @@ function App() {
       {compiledContract ? (
         <>
           <div className='networkSelect'>
-            <label>StarkNet network</label>
+            <label>STARKNET NETWORK</label>
             <select value={selectedNetwork} onChange={(event) => setSelectedNetwork(event.target.value as NetworkName)}>
               <option value="mainnet-alpha">mainnet-alpha</option>
               <option value="goerli-alpha">goerli-alpha</option>
