@@ -10,7 +10,7 @@ const remixClient = createClient(new PluginClient())
 const cairoHostUrl : string = process.env.REACT_APP_CAIRO_HOST_URL || '';
 const deployScriptDirectory = './scripts/deploy.js';
 const contractDirectory = 'compiled_cairo_artifacts/contract.json';
-
+const allowedFileExtensions = ['cairo'];
 
 function App() {
   const [compiledContract, setContract] = useState<ContractType | null>(null);
@@ -18,7 +18,7 @@ function App() {
   const [deployIsLoading, setLoading] = useState(false);
   const [deployedContract, setDeployedContract] = useState<string | undefined>(undefined);
   const [hasCreatedScript, setScriptStatus] = useState(false);
-  const [noFileSelected, setFileSelection] = useState(false);
+  const [noFileSelected, setNoFileSelected] = useState(false);
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkName>('mainnet-alpha');
   const [compiling, setCompilingStatus] = useState(false);
 
@@ -26,7 +26,7 @@ function App() {
     setLoading(false);
     setContract(null);
     setScriptStatus(false);
-    setFileSelection(false);
+    setNoFileSelected(false);
     setDeployedContract(undefined);
 
     let currentFile: string;
@@ -34,7 +34,14 @@ function App() {
     try {
       currentFile = await remixClient.call('fileManager', 'getCurrentFile');
     } catch (error) {
-      setFileSelection(true);
+      setNoFileSelected(true);
+      return;
+    }
+
+    const currentFileExtension = currentFile.split('.').pop() || '';
+
+    if (!allowedFileExtensions.includes(currentFileExtension)) {
+      setNoFileSelected(true);
       return;
     }
 
