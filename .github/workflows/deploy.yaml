@@ -1,0 +1,47 @@
+name: Deploy
+
+on: push
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build the project for production
+        if: github.ref == 'refs/heads/main'
+        run: yarn build
+        env:
+          REACT_APP_CAIRO_HOST_URL: https://2uuf49xjkk.execute-api.us-east-2.amazonaws.com/prod/cairo
+
+      - name: Build the project for development
+        if: github.ref == 'refs/heads/develop'
+        run: yarn build
+        env:
+          REACT_APP_CAIRO_HOST_URL: https://2uuf49xjkk.execute-api.us-east-2.amazonaws.com/prod/cairo
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy to production
+        if: github.ref == 'refs/heads/main'
+        run: aws s3 sync ./build  s3://starkware-remix-plugin-production
+
+      - name: Deploy to development
+        if: github.ref == 'refs/heads/develop'
+        run: aws s3 sync ./build  s3://starkware-remix-plugin-development
