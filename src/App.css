@@ -23,7 +23,7 @@ label {
   text-transform: uppercase;
 }
 
-.networkSelect {
+.networkSelect, .deployScriptName {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -51,6 +51,24 @@ select {
   border-radius: 2px;
   -moz-appearance: none;
   -webkit-appearance: none;
+}
+
+input {
+  display: inline-block;
+  width: 100%;
+  height: calc(1.25em + 1rem + 2px);
+  padding: 0.375rem 1.75rem 0.375rem 0.75rem;
+  font-size: .875rem;
+  font-weight: 400;
+  line-height: 1.25;
+  color: #dfe1ea;
+  word-wrap: normal;
+  vertical-align: middle;
+  outline: none;
+  padding-right: 15px;
+  background-color: #2e3145;
+  border: 1px solid transparent!important;
+  border-radius: 2px;
 }
 
 .codeSection {
