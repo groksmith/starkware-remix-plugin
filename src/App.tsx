@@ -9,7 +9,8 @@ import './App.css'
 
 const remixClient = createClient(new PluginClient())
 const cairoHostUrl : string = process.env.REACT_APP_CAIRO_HOST_URL || '';
-const deployScriptDirectory = './scripts/deploy.js';
+const deployScriptDirectory = './scripts';
+const defaultScriptFileName = 'deploy.js';
 const contractDirectory = 'compiled_cairo_artifacts/contract.json';
 const allowedFileExtensions = ['cairo'];
 
@@ -21,6 +22,7 @@ function App() {
   const [deployedContract, setDeployedContract] = useState<string | undefined>(undefined);
   const [hasCreatedScript, setScriptStatus] = useState(false);
   const [noFileSelected, setNoFileSelected] = useState(false);
+  const [scriptFileName, setScriptFileName] = useState(defaultScriptFileName);
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkName>('goerli-alpha');
   const [compiling, setCompilingStatus] = useState(false);
 
@@ -122,8 +124,13 @@ function App() {
 
   const deployScript = async () => {
     await remixClient.call('fileManager', 'writeFile', contractDirectory, JSON.stringify(compiledContract));
+    if (!scriptFileName) setScriptFileName(defaultScriptFileName);
+    remixClient.call('fileManager', 'writeFile', `${deployScriptDirectory}/${scriptFileName || defaultScriptFileName}`, DeployScriptContent).then(() => setScriptStatus(true));
+  }
 
-    remixClient.call('fileManager', 'writeFile', deployScriptDirectory, DeployScriptContent).then(() => setScriptStatus(true));
+  const changeScriptFileName = (value: string) => {
+    setScriptFileName(value);
+    setScriptStatus(false);
   }
 
   return (
@@ -141,6 +148,10 @@ function App() {
             </select>
           </div>
           <div role="button" onClick={deployContract}>Deploy</div>
+          <div className='deployScriptName'>
+            <label>SCRIPT FILE NAME</label>
+              <input value={scriptFileName} placeholder={defaultScriptFileName} onChange={(event) => changeScriptFileName(event.target.value)} type="text"/>
+          </div>
           {(deploymentError) ?  <Error message={deploymentError} /> : null}
         </>
       ) : null}
@@ -156,7 +167,7 @@ function App() {
 
       {compiledContract ? <div role="button" onClick={deployScript}>Create deploy script</div> : null}
 
-      {hasCreatedScript ? <p>Created script at {deployScriptDirectory}</p> : null}
+      {hasCreatedScript ? <p>Created script at {`${deployScriptDirectory}/${scriptFileName}`}</p> : null}
 
       {noFileSelected ? <p>Please select file containing Cairo contract</p> : null}
 
