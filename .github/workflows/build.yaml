@@ -1,0 +1,29 @@
+name: Build & Deploy
+
+on: pull_request
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Run the linter
+        run: yarn lint
+
+      - name: Run the tests
+        run: yarn test
+
+      - name: Test if the build runs successfully
+        run: yarn build
