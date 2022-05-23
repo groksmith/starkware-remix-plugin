@@ -148,6 +148,15 @@ function App() {
             </select>
           </div>
           <div role="button" onClick={deployContract}>Deploy</div>
+          {deployIsLoading ? <p>Deploying...</p> : null}
+
+          {deployedContract && !deployIsLoading ? 
+            <>
+              <p>Deployed contract address</p>
+              <p className="contractAddress">{deployedContract}</p>
+            </>
+          : null}
+          
           <div className='deployScriptName'>
             <label>SCRIPT FILE NAME</label>
               <input value={scriptFileName} placeholder={defaultScriptFileName} onChange={(event) => changeScriptFileName(event.target.value)} type="text"/>
@@ -155,15 +164,6 @@ function App() {
           {(deploymentError) ?  <Error message={deploymentError} /> : null}
         </>
       ) : null}
-      
-      {deployIsLoading ? <p>Deploying...</p> : null}
-
-      {deployedContract && !deployIsLoading ? 
-        <>
-          <p>Deployed contract address</p>
-          <p className="contractAddress">{deployedContract}</p>
-        </>
-      : null}
 
       {compiledContract ? <div role="button" onClick={deployScript}>Create deploy script</div> : null}
 
