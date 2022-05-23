@@ -21,7 +21,7 @@ function App() {
   const [deployedContract, setDeployedContract] = useState<string | undefined>(undefined);
   const [hasCreatedScript, setScriptStatus] = useState(false);
   const [noFileSelected, setNoFileSelected] = useState(false);
-  const [selectedNetwork, setSelectedNetwork] = useState<NetworkName>('mainnet-alpha');
+  const [selectedNetwork, setSelectedNetwork] = useState<NetworkName>('goerli-alpha');
   const [compiling, setCompilingStatus] = useState(false);
 
   const compileContract = async () => {
