@@ -15,7 +15,7 @@ const allowedFileExtensions = ['cairo'];
 
 function App() {
   const [compiledContract, setContract] = useState<ContractType | null>(null);
-  const [compilationError, setCompilationError] = useState<any>(null);
+  const [compilationErrorTrace, setCompilationErrorTrace] = useState<any>(null);
   const [deploymentError, setDeploymentError] = useState<any>(false);
   const [deployIsLoading, setLoading] = useState(false);
   const [deployedContract, setDeployedContract] = useState<string | undefined>(undefined);
@@ -30,7 +30,7 @@ function App() {
     setScriptStatus(false);
     setNoFileSelected(false);
     setDeployedContract(undefined);
-    setCompilationError(null)
+    setCompilationErrorTrace(null)
 
     let currentFile: string;
 
@@ -55,6 +55,7 @@ function App() {
   }
 
   const runContractCompilation = async (currentFileContent: string) => {
+    await remixClient.editor.clearAnnotations();
     try {
       const response = await fetch(cairoHostUrl, {
         method: 'POST',
@@ -70,7 +71,7 @@ function App() {
       const responseData = await response.json();
       setCompilingStatus(false);
       if (responseData.error) {
-        setCompilationError(responseData.error);
+        setCompilationError(responseData.error)
         return;
       }
 
@@ -78,6 +79,16 @@ function App() {
     } catch(exception) {
       console.error(exception);
     }
+  }
+
+  const setCompilationError = async (error: any) => {
+    setCompilationErrorTrace(error);
+    const errorObject = error.split(':');
+    const row = +errorObject[2];
+    const column = +errorObject[3];
+
+    if (isNaN(row) || isNaN(column)) return;
+    await remixClient.editor.addAnnotation({ row: row-1, column: column, text: error, type: 'error' });
   }
 
   const deployContract = async () => {
@@ -130,9 +141,10 @@ function App() {
             </select>
           </div>
           <div role="button" onClick={deployContract}>Deploy</div>
+          {(deploymentError) ?  <Error message={deploymentError} /> : null}
         </>
       ) : null}
-
+      
       {deployIsLoading ? <p>Deploying...</p> : null}
 
       {deployedContract && !deployIsLoading ? 
@@ -148,8 +160,7 @@ function App() {
 
       {noFileSelected ? <p>Please select file containing Cairo contract</p> : null}
 
-      {(compilationError || deploymentError) ?  <Error message={compilationError || deploymentError} /> : null}
-
+      {(compilationErrorTrace) ?  <Error message={compilationErrorTrace} /> : null}
     </div>  
   )
 }
