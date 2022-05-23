@@ -71,7 +71,7 @@ function App() {
       const responseData = await response.json();
       setCompilingStatus(false);
       if (responseData.error) {
-        setCompilationError(responseData.error)
+        setCompilationError(responseData.error);
         return;
       }
 
