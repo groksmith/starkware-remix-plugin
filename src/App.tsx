@@ -5,6 +5,8 @@ import { useState } from 'react'
 import { randomAddress } from 'starknet/dist/utils/stark';
 import { NetworkName, ContractType, DeployScriptContent } from './helpers/common';
 import Error from './components/CompilationError/CompilationError';
+import ConstructorInputsForm from './components/ConstructorInputsForm/ConstructorInputsForm';
+
 import './App.css'
 
 const remixClient = createClient(new PluginClient())
@@ -21,6 +23,8 @@ const voyagerBasePaths = {
 
 function App() {
   const [compiledContract, setContract] = useState<ContractType | null>(null);
+  const [constructorInputs, setConstructorInputs] = useState(null);
+  const [constructorInputValues, setConstructorInputValues] = useState([]);
   const [compilationErrorTrace, setCompilationErrorTrace] = useState<any>(null);
   const [deploymentError, setDeploymentError] = useState<any>(false);
   const [deployIsLoading, setLoading] = useState(false);
@@ -34,6 +38,7 @@ function App() {
   const compileContract = async () => {
     setLoading(false);
     setContract(null);
+    setConstructorInputs(null);
     setScriptStatus(false);
     setNoFileSelected(false);
     setDeployedContract(undefined);
@@ -82,10 +87,17 @@ function App() {
         return;
       }
 
+      defineConstructorInputs(responseData);
       setContract(responseData);
     } catch(exception) {
       console.error(exception);
     }
+  }
+
+  const defineConstructorInputs = (contractData: ContractType) => {
+    const constructorResponse: any = contractData.contract_definition.abi.find(item=>item.name === "constructor");
+    if (!constructorResponse || !constructorResponse?.inputs?.length) return;
+    setConstructorInputs(constructorResponse.inputs);
   }
 
   const setCompilationError = async (error: any) => {
@@ -112,13 +124,15 @@ function App() {
     })
 
     try {
+      const transactionInputs = (constructorInputs || []).map((item: any)=> constructorInputValues[item.name] || null);
+      
       const response = await provider.addTransaction({
         type: 'DEPLOY',
         contract_definition: compiledContract.contract_definition,
         contract_address_salt: randomAddress(),
-        constructor_calldata: []
+        constructor_calldata: transactionInputs
       });
-      
+
       setDeployedContract(response.address);
     } catch (exception: any) {
       setDeploymentError(exception.response.data.message);
@@ -152,6 +166,7 @@ function App() {
               <option value="goerli-alpha">goerli-alpha</option>
             </select>
           </div>
+          {constructorInputs ? <ConstructorInputsForm inputs={constructorInputs} onInputValueChange={(data: any) => setConstructorInputValues(data)} /> : null}
           <div role="button" onClick={deployContract}>Deploy</div>
           {deployIsLoading ? <p>Deploying...</p> : null}
 
@@ -162,12 +177,12 @@ function App() {
               <p><a href={`${voyagerBasePaths[selectedNetwork]}/${deployedContract}`} target="_blank" rel="noreferrer" >View on Voyager</a></p>
             </>
           : null}
-          
+          {(deploymentError) ?  <Error message={deploymentError} /> : null}
           <div className='deployScriptName'>
             <label>SCRIPT FILE NAME</label>
               <input value={scriptFileName} placeholder={defaultScriptFileName} onChange={(event) => changeScriptFileName(event.target.value)} type="text"/>
           </div>
-          {(deploymentError) ?  <Error message={deploymentError} /> : null}
+          
         </>
       ) : null}
 
