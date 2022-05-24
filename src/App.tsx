@@ -159,7 +159,7 @@ function App() {
             <>
               <p>Deployed contract address</p>
               <p className="contractAddress">{deployedContract}</p>
-              <p><a href={`${voyagerBasePaths[selectedNetwork]}/${deployedContract}`} target="_blank" >View on Voyager</a></p>
+              <p><a href={`${voyagerBasePaths[selectedNetwork]}/${deployedContract}`} target="_blank" rel="noreferrer" >View on Voyager</a></p>
             </>
           : null}
           
