@@ -13,6 +13,11 @@ const deployScriptDirectory = './scripts';
 const defaultScriptFileName = 'deploy.js';
 const contractDirectory = 'compiled_cairo_artifacts/contract.json';
 const allowedFileExtensions = ['cairo'];
+const voyagerBasePaths = {
+  'goerli-alpha': 'https://goerli.voyager.online/contract',
+  'mainnet-alpha': 'https://voyager.online/contract'
+};
+
 
 function App() {
   const [compiledContract, setContract] = useState<ContractType | null>(null);
@@ -154,6 +159,7 @@ function App() {
             <>
               <p>Deployed contract address</p>
               <p className="contractAddress">{deployedContract}</p>
+              <p><a href={`${voyagerBasePaths[selectedNetwork]}/${deployedContract}`} target="_blank" >View on Voyager</a></p>
             </>
           : null}
           
