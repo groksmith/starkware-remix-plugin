@@ -1,7 +1,7 @@
 import { createClient } from '@remixproject/plugin-webview'
 import { PluginClient } from '@remixproject/plugin'
 import { Provider, } from 'starknet';
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { randomAddress } from 'starknet/dist/utils/stark';
 import { NetworkName, ContractType, DeployScriptContent } from './helpers/common';
 import Error from './components/CompilationError/CompilationError';
@@ -34,8 +34,22 @@ function App() {
   const [scriptFileName, setScriptFileName] = useState(defaultScriptFileName);
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkName>('goerli-alpha');
   const [compiling, setCompilingStatus] = useState(false);
+  const [currentFileName, setCurrentFileName] = useState('');
+
+  useEffect(() => {
+    setTimeout(() => {
+      remixClient.on('fileManager', 'currentFileChanged', (currentFileChanged: any) => {
+        const fileName = currentFileChanged.split('/').pop();
+        const currentFileExtension = fileName.split('.').pop() || '';
+        setNoFileSelected(!allowedFileExtensions.includes(currentFileExtension));
+        setCurrentFileName(fileName);
+      })
+    }, 1000);
+  }, [])
 
   const compileContract = async () => {
+    if (noFileSelected|| !currentFileName) return;
+
     setLoading(false);
     setContract(null);
     setConstructorInputs(null);
@@ -154,9 +168,10 @@ function App() {
 
   return (
     <div className="container">
-      <div role="button" onClick={compileContract}>{
-        compiling ? 'Compiling...' : 'Compile current file'
+      <div role="button" aria-disabled={noFileSelected|| !currentFileName} onClick={compileContract}>{
+        compiling ? `Compiling ${currentFileName}...` : `Compile ${currentFileName}`
       }</div>
+      {noFileSelected  || !currentFileName ? <p>Please select file containing Cairo contract</p> : null}
       {compiledContract ? (
         <>
           <div className='networkSelect'>
@@ -189,8 +204,6 @@ function App() {
       {compiledContract ? <div role="button" onClick={deployScript}>Create deploy script</div> : null}
 
       {hasCreatedScript ? <p>Created script at {`${deployScriptDirectory}/${scriptFileName}`}</p> : null}
-
-      {noFileSelected ? <p>Please select file containing Cairo contract</p> : null}
 
       {(compilationErrorTrace) ?  <Error message={compilationErrorTrace} /> : null}
     </div>  
