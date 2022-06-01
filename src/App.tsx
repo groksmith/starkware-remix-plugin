@@ -35,6 +35,7 @@ function App() {
   const [scriptFileName, setScriptFileName] = useState(defaultScriptFileName);
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkName>('goerli-alpha');
   const [devnetBaseUrl, setDevnetBaseUrl] = useState<string>('');
+  const [devnetBaseUrlError, setDevnetBaseUrlError] = useState<boolean>(false);
   const [compiling, setCompilingStatus] = useState(false);
   const [currentFileName, setCurrentFileName] = useState('');
 
@@ -127,9 +128,8 @@ function App() {
   }
 
   const deployContract = async () => {
-    if(!compiledContract || (isDevnet() && !devnetBaseUrl)) {
-      return;
-    }
+    if(!compiledContract || (isDevnet() && !devnetBaseUrl)) return;
+    if (isDevnet() && !devnetBaseUrl.startsWith('https://')) return setDevnetBaseUrlError(true);
 
     setDeployedContract(undefined);
     setDeploymentError(null);
@@ -183,6 +183,11 @@ function App() {
     setScriptStatus(false);
   }
 
+  const devnetUrlChange = (value: string) => {
+    setDevnetBaseUrl(value);
+    setDevnetBaseUrlError(false);
+  }
+
   return (
     <div className="container">
       <div role="button" aria-disabled={noFileSelected|| !currentFileName} onClick={compileContract}>{
@@ -203,7 +208,9 @@ function App() {
             isDevnet()
             ? <div className='devnetBaseUrl'>
                 <label>Devnet URL</label>
-                  <input value={devnetBaseUrl} onChange={(event) => setDevnetBaseUrl(event.target.value)} type="text"/>
+                  <input value={devnetBaseUrl} onChange={(event) => devnetUrlChange(event.target.value)} type="text"/>
+                  {(devnetBaseUrlError) ?  <Error message="Please check Devnet URL: The url should be only with https protocol" /> : null}
+
               </div>
             : null
           }
