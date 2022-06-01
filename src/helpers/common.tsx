@@ -6,7 +6,13 @@ export type ContractType = {
     version: number
 }
 
-export type NetworkName = 'mainnet-alpha' | 'goerli-alpha';
+export type ProviderOptions = {
+  network: NetworkName;
+} | {
+  baseUrl: string;
+};
+
+export type NetworkName = 'mainnet-alpha' | 'goerli-alpha' | 'devnet';
 
 
 export const DeployScriptContent = `

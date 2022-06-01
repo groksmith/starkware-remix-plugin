@@ -3,7 +3,7 @@ import { PluginClient } from '@remixproject/plugin'
 import { Provider, } from 'starknet';
 import { useState, useEffect } from 'react'
 import { randomAddress } from 'starknet/dist/utils/stark';
-import { NetworkName, ContractType, DeployScriptContent } from './helpers/common';
+import { NetworkName, ContractType, DeployScriptContent, ProviderOptions } from './helpers/common';
 import Error from './components/CompilationError/CompilationError';
 import ConstructorInputsForm from './components/ConstructorInputsForm/ConstructorInputsForm';
 
@@ -17,7 +17,8 @@ const contractDirectory = 'compiled_cairo_artifacts/contract.json';
 const allowedFileExtensions = ['cairo'];
 const voyagerBasePaths = {
   'goerli-alpha': 'https://goerli.voyager.online/contract',
-  'mainnet-alpha': 'https://voyager.online/contract'
+  'mainnet-alpha': 'https://voyager.online/contract',
+  'devnet': ''
 };
 
 
@@ -33,6 +34,7 @@ function App() {
   const [noFileSelected, setNoFileSelected] = useState(false);
   const [scriptFileName, setScriptFileName] = useState(defaultScriptFileName);
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkName>('goerli-alpha');
+  const [devnetBaseUrl, setDevnetBaseUrl] = useState<string>('');
   const [compiling, setCompilingStatus] = useState(false);
   const [currentFileName, setCurrentFileName] = useState('');
 
@@ -125,7 +127,7 @@ function App() {
   }
 
   const deployContract = async () => {
-    if(!compiledContract) {
+    if(!compiledContract || (isDevnet() && !devnetBaseUrl)) {
       return;
     }
 
@@ -133,10 +135,15 @@ function App() {
     setDeploymentError(null);
     setLoading(true);
 
-    const provider = new Provider({
-      network: selectedNetwork,
-    })
+    const payload: ProviderOptions | any = {};
 
+    if(isDevnet()) {
+      payload['baseUrl'] = devnetBaseUrl;
+    } else {
+      payload['network'] = selectedNetwork
+    }
+
+    const provider = new Provider(payload);
     try {
       const transactionInputs = (constructorInputs || []).map((item: any)=> constructorInputValues[item.name] || null);
       
@@ -149,11 +156,21 @@ function App() {
 
       setDeployedContract(response.address);
     } catch (exception: any) {
-      setDeploymentError(exception.response.data.message);
+      let errorMessage = exception.toString();
+
+      if (exception?.response?.data?.message) {
+        errorMessage = exception?.response?.data?.message;
+      } else if (errorMessage.includes('Network Error')) {
+        errorMessage = 'Error: Request failed with status code 404';
+      }
+
+      setDeploymentError(errorMessage);
     }
 
     setLoading(false);
   }
+
+  const isDevnet = () => selectedNetwork === 'devnet';
 
   const deployScript = async () => {
     await remixClient.call('fileManager', 'writeFile', contractDirectory, JSON.stringify(compiledContract));
@@ -179,17 +196,26 @@ function App() {
             <select value={selectedNetwork} onChange={(event) => setSelectedNetwork(event.target.value as NetworkName)}>
               <option value="mainnet-alpha">mainnet-alpha</option>
               <option value="goerli-alpha">goerli-alpha</option>
+              <option value="devnet">Deploy to Local Devnet</option>
             </select>
           </div>
+          {
+            isDevnet()
+            ? <div className='devnetBaseUrl'>
+                <label>Devnet URL</label>
+                  <input value={devnetBaseUrl} onChange={(event) => setDevnetBaseUrl(event.target.value)} type="text"/>
+              </div>
+            : null
+          }
           {constructorInputs ? <ConstructorInputsForm inputs={constructorInputs} onInputValueChange={(data: any) => setConstructorInputValues(data)} /> : null}
-          <div role="button" onClick={deployContract}>Deploy</div>
+          <div role="button" aria-disabled={isDevnet() && !devnetBaseUrl} onClick={deployContract}>Deploy</div>
           {deployIsLoading ? <p>Deploying...</p> : null}
 
           {deployedContract && !deployIsLoading ? 
             <>
               <p>Deployed contract address</p>
               <p className="contractAddress">{deployedContract}</p>
-              <p><a href={`${voyagerBasePaths[selectedNetwork]}/${deployedContract}`} target="_blank" rel="noreferrer" >View on Voyager</a></p>
+              {!isDevnet() ? <p><a href={`${voyagerBasePaths[selectedNetwork]}/${deployedContract}`} target="_blank" rel="noreferrer" >View on Voyager</a></p> : null}
             </>
           : null}
           {(deploymentError) ?  <Error message={deploymentError} /> : null}
