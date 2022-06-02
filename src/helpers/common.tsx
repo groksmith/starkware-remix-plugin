@@ -24,7 +24,7 @@ export const DeployScriptContent = `
         const compiledContract = starknet.json.parse(compiledCairoContract);
         
         const provider = new starknet.Provider({
-          network: 'mainnet-alpha' // mainnet-alpha or goerli-alpha
+          network: 'goerli-alpha' // mainnet-alpha or goerli-alpha
         })
 
         const res = await provider.addTransaction({
