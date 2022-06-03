@@ -29,7 +29,7 @@ function App() {
   const [compilationErrorTrace, setCompilationErrorTrace] = useState<any>(null);
   const [deploymentError, setDeploymentError] = useState<any>(false);
   const [deployIsLoading, setLoading] = useState(false);
-  const [deployedContract, setDeployedContract] = useState<string | undefined>(undefined);
+  const [deployedContract, setDeployedContract] = useState<any>(undefined);
   const [hasCreatedScript, setScriptStatus] = useState(false);
   const [noFileSelected, setNoFileSelected] = useState(false);
   const [scriptFileName, setScriptFileName] = useState(defaultScriptFileName);
@@ -154,7 +154,7 @@ function App() {
         constructor_calldata: transactionInputs
       });
 
-      setDeployedContract(response.address);
+      setDeployedContract(response);
     } catch (exception: any) {
       let errorMessage = exception.toString();
 
@@ -221,8 +221,10 @@ function App() {
           {deployedContract && !deployIsLoading ? 
             <>
               <p>Deployed contract address</p>
-              <p className="contractAddress">{deployedContract}</p>
-              {!isDevnet() ? <p><a href={`${voyagerBasePaths[selectedNetwork]}/${deployedContract}`} target="_blank" rel="noreferrer" >View on Voyager</a></p> : null}
+              <p className="contractAddress">{deployedContract.address}</p>
+              <p>Tx Hash</p>
+              <p className="contractAddress">{deployedContract.transaction_hash}</p>
+              {!isDevnet() ? <p><a href={`${voyagerBasePaths[selectedNetwork]}/${deployedContract.address}`} target="_blank" rel="noreferrer" >View on Voyager</a></p> : null}
             </>
           : null}
           {(deploymentError) ?  <Error message={deploymentError} /> : null}
