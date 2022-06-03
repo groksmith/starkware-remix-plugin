@@ -24,7 +24,7 @@ export const DeployScriptContent = `
         const compiledContract = starknet.json.parse(compiledCairoContract);
         
         const provider = new starknet.Provider({
-          network: 'mainnet-alpha' // mainnet-alpha or goerli-alpha
+          network: 'goerli-alpha' // mainnet-alpha or goerli-alpha
         })
 
         const res = await provider.addTransaction({
@@ -44,6 +44,7 @@ export const DeployScriptContent = `
         // result contains the return value of the method you gave to callContract
 
         console.log('Deployed contract address: ', res.address)
+        console.log('Deployed contract transaction hash: ', res.transaction_hash)
         console.log('Deployment successful.')
     } catch (e) {
         console.log(e.message)
