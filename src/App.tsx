@@ -1,177 +1,25 @@
 import { createClient } from '@remixproject/plugin-webview'
 import { PluginClient } from '@remixproject/plugin'
-import { Provider, } from 'starknet';
-import { useState, useEffect } from 'react'
-import { randomAddress } from 'starknet/dist/utils/stark';
-import { NetworkName, ContractType, DeployScriptContent } from './helpers/common';
-import Error from './components/CompilationError/CompilationError';
-import ConstructorInputsForm from './components/ConstructorInputsForm/ConstructorInputsForm';
+import { useState } from 'react'
+import { NetworkName, ContractType } from './helpers/common';
+import ContractScriptFile from './components/ContractScriptFile/ContractScriptFile';
+import DeployContract from './components/DeployContract/DeployContract';
+import CompileContract from './components/CompileContract/CompileContract';
 
 import './App.css'
 
 const remixClient = createClient(new PluginClient())
-const cairoHostUrl : string = process.env.REACT_APP_CAIRO_HOST_URL || '';
-const deployScriptDirectory = './scripts';
-const defaultScriptFileName = 'deploy.js';
-const contractDirectory = 'compiled_cairo_artifacts/contract.json';
-const allowedFileExtensions = ['cairo'];
-const voyagerBasePaths = {
-  'goerli-alpha': 'https://goerli.voyager.online/contract',
-  'mainnet-alpha': 'https://voyager.online/contract'
-};
-
 
 function App() {
   const [compiledContract, setContract] = useState<ContractType | null>(null);
   const [constructorInputs, setConstructorInputs] = useState(null);
-  const [constructorInputValues, setConstructorInputValues] = useState([]);
-  const [compilationErrorTrace, setCompilationErrorTrace] = useState<any>(null);
-  const [deploymentError, setDeploymentError] = useState<any>(false);
-  const [deployIsLoading, setLoading] = useState(false);
-  const [deployedContract, setDeployedContract] = useState<string | undefined>(undefined);
-  const [hasCreatedScript, setScriptStatus] = useState(false);
-  const [noFileSelected, setNoFileSelected] = useState(false);
-  const [scriptFileName, setScriptFileName] = useState(defaultScriptFileName);
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkName>('goerli-alpha');
-  const [compiling, setCompilingStatus] = useState(false);
-  const [currentFileName, setCurrentFileName] = useState('');
-
-  useEffect(() => {
-    setTimeout(() => {
-      remixClient.on('fileManager', 'currentFileChanged', (currentFileChanged: any) => {
-        const fileName = currentFileChanged.split('/').pop();
-        const currentFileExtension = fileName.split('.').pop() || '';
-        setNoFileSelected(!allowedFileExtensions.includes(currentFileExtension));
-        setCurrentFileName(fileName);
-      })
-    }, 1000);
-  }, [])
-
-  const compileContract = async () => {
-    if (noFileSelected|| !currentFileName) return;
-
-    setLoading(false);
-    setContract(null);
-    setConstructorInputs(null);
-    setScriptStatus(false);
-    setNoFileSelected(false);
-    setDeployedContract(undefined);
-    setCompilationErrorTrace(null)
-
-    let currentFile: string;
-
-    try {
-      currentFile = await remixClient.call('fileManager', 'getCurrentFile');
-    } catch (error) {
-      setNoFileSelected(true);
-      return;
-    }
-
-    const currentFileExtension = currentFile.split('.').pop() || '';
-
-    if (!allowedFileExtensions.includes(currentFileExtension)) {
-      setNoFileSelected(true);
-      return;
-    }
-
-    const currentFileContent = await remixClient.call('fileManager', 'readFile', currentFile);
-
-    setCompilingStatus(true);
-    runContractCompilation(currentFileContent);
-  }
-
-  const runContractCompilation = async (currentFileContent: string) => {
-    await remixClient.editor.clearAnnotations();
-    try {
-      const response = await fetch(cairoHostUrl, {
-        method: 'POST',
-        headers: {
-          accept: 'application/json',
-        },
-        body: JSON.stringify({
-          action: "compile-contract",
-          code: currentFileContent
-        })
-      });
-
-      const responseData = await response.json();
-      setCompilingStatus(false);
-      if (responseData.error) {
-        setCompilationError(responseData.error);
-        return;
-      }
-
-      defineConstructorInputs(responseData);
-      setContract(responseData);
-    } catch(exception) {
-      console.error(exception);
-    }
-  }
-
-  const defineConstructorInputs = (contractData: ContractType) => {
-    const constructorResponse: any = contractData.contract_definition.abi.find(item=>item.name === "constructor");
-    if (!constructorResponse || !constructorResponse?.inputs?.length) return;
-    setConstructorInputs(constructorResponse.inputs);
-  }
-
-  const setCompilationError = async (error: any) => {
-    setCompilationErrorTrace(error);
-    const errorObject = error.split(':');
-    const row = +errorObject[2];
-    const column = +errorObject[3];
-
-    if (isNaN(row) || isNaN(column)) return;
-    await remixClient.editor.addAnnotation({ row: row-1, column: column, text: error, type: 'error' });
-  }
-
-  const deployContract = async () => {
-    if(!compiledContract) {
-      return;
-    }
-
-    setDeployedContract(undefined);
-    setDeploymentError(null);
-    setLoading(true);
-
-    const provider = new Provider({
-      network: selectedNetwork,
-    })
-
-    try {
-      const transactionInputs = (constructorInputs || []).map((item: any)=> constructorInputValues[item.name] || null);
-      
-      const response = await provider.addTransaction({
-        type: 'DEPLOY',
-        contract_definition: compiledContract.contract_definition,
-        contract_address_salt: randomAddress(),
-        constructor_calldata: transactionInputs
-      });
-
-      setDeployedContract(response.address);
-    } catch (exception: any) {
-      setDeploymentError(exception.response.data.message);
-    }
-
-    setLoading(false);
-  }
-
-  const deployScript = async () => {
-    await remixClient.call('fileManager', 'writeFile', contractDirectory, JSON.stringify(compiledContract));
-    if (!scriptFileName) setScriptFileName(defaultScriptFileName);
-    remixClient.call('fileManager', 'writeFile', `${deployScriptDirectory}/${scriptFileName || defaultScriptFileName}`, DeployScriptContent).then(() => setScriptStatus(true));
-  }
-
-  const changeScriptFileName = (value: string) => {
-    setScriptFileName(value);
-    setScriptStatus(false);
-  }
+  const isDevnet = () => selectedNetwork === 'devnet';
 
   return (
     <div className="container">
-      <div role="button" aria-disabled={noFileSelected|| !currentFileName} onClick={compileContract}>{
-        compiling ? `Compiling ${currentFileName}...` : `Compile ${currentFileName}`
-      }</div>
-      {noFileSelected  || !currentFileName ? <p>Please select file containing Cairo contract</p> : null}
+      <CompileContract remixClient={remixClient} onConstructorInputsChange={(data: any) => setConstructorInputs(data)} onContractChange={(contract: ContractType | null) => setContract(contract)} />
+      
       {compiledContract ? (
         <>
           <div className='networkSelect'>
@@ -179,33 +27,13 @@ function App() {
             <select value={selectedNetwork} onChange={(event) => setSelectedNetwork(event.target.value as NetworkName)}>
               <option value="mainnet-alpha">mainnet-alpha</option>
               <option value="goerli-alpha">goerli-alpha</option>
+              <option value="devnet">Deploy to Local Devnet</option>
             </select>
           </div>
-          {constructorInputs ? <ConstructorInputsForm inputs={constructorInputs} onInputValueChange={(data: any) => setConstructorInputValues(data)} /> : null}
-          <div role="button" onClick={deployContract}>Deploy</div>
-          {deployIsLoading ? <p>Deploying...</p> : null}
-
-          {deployedContract && !deployIsLoading ? 
-            <>
-              <p>Deployed contract address</p>
-              <p className="contractAddress">{deployedContract}</p>
-              <p><a href={`${voyagerBasePaths[selectedNetwork]}/${deployedContract}`} target="_blank" rel="noreferrer" >View on Voyager</a></p>
-            </>
-          : null}
-          {(deploymentError) ?  <Error message={deploymentError} /> : null}
-          <div className='deployScriptName'>
-            <label>SCRIPT FILE NAME</label>
-              <input value={scriptFileName} placeholder={defaultScriptFileName} onChange={(event) => changeScriptFileName(event.target.value)} type="text"/>
-          </div>
-          
+          <DeployContract compiledContract={compiledContract} selectedNetwork={selectedNetwork} constructorInputs={constructorInputs} isDevnet={isDevnet} />
+          <ContractScriptFile remixClient={remixClient} compiledContract={compiledContract}/>
         </>
       ) : null}
-
-      {compiledContract ? <div role="button" onClick={deployScript}>Create deploy script</div> : null}
-
-      {hasCreatedScript ? <p>Created script at {`${deployScriptDirectory}/${scriptFileName}`}</p> : null}
-
-      {(compilationErrorTrace) ?  <Error message={compilationErrorTrace} /> : null}
     </div>  
   )
 }
