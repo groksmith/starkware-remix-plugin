@@ -10,6 +10,7 @@ import './App.css'
 
 const remixClient = createClient(new PluginClient())
 
+
 function App() {
   const [compiledContract, setContract] = useState<ContractType | null>(null);
   const [constructorInputs, setConstructorInputs] = useState(null);
@@ -34,7 +35,7 @@ function App() {
           <ContractScriptFile remixClient={remixClient} compiledContract={compiledContract}/>
         </>
       ) : null}
-    </div>  
+    </div>
   )
 }
 
