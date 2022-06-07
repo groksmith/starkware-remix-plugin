@@ -1,6 +1,6 @@
 import { createClient } from '@remixproject/plugin-webview'
 import { PluginClient } from '@remixproject/plugin'
-import { Provider, } from 'starknet';
+import { Provider, CompiledContract} from 'starknet';
 import { useState, useEffect } from 'react'
 import { randomAddress } from 'starknet/dist/utils/stark';
 import { NetworkName, ContractType, DeployScriptContent, ProviderOptions } from './helpers/common';
@@ -146,12 +146,10 @@ function App() {
     const provider = new Provider(payload);
     try {
       const transactionInputs = (constructorInputs || []).map((item: any)=> constructorInputValues[item.name] || null);
-      
-      const response = await provider.addTransaction({
-        type: 'DEPLOY',
-        contract_definition: compiledContract.contract_definition,
-        contract_address_salt: randomAddress(),
-        constructor_calldata: transactionInputs
+      const response = await provider.deployContract({
+        contract: compiledContract.contract_definition,
+        addressSalt: randomAddress(),
+        constructorCalldata: transactionInputs
       });
 
       setDeployedContract(response);
