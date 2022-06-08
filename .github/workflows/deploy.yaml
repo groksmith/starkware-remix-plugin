@@ -40,12 +40,12 @@ jobs:
 
       - name: Deploy to production
         if: github.ref == 'refs/heads/main'
-        run:
+        run: |
           aws s3 sync ./build  s3://starkware-remix-plugin-production
           aws cloudfront create-invalidation --distribution-id E1P6LZ35M9IFDD --paths "/*"
 
       - name: Deploy to development
         if: github.ref == 'refs/heads/develop'
-        run:
+        run: |
           aws s3 sync ./build  s3://starkware-remix-plugin-development
           aws cloudfront create-invalidation --distribution-id E3C159JNJU7BOY --paths "/*"
