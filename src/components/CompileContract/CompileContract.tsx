@@ -28,7 +28,7 @@ function CompileContract(props: DeployContractProps) {
         setCurrentFileName(fileName);
       })
     }, 1000);
-  }, [])
+  }, [remixClient])
 
   const setCompilationError = async (error: any) => {
     setCompilationErrorTrace(error);
