@@ -1,6 +1,6 @@
 import { createClient } from '@remixproject/plugin-webview'
 import { PluginClient } from '@remixproject/plugin'
-import { Provider, CompiledContract} from 'starknet';
+import { Provider} from 'starknet';
 import { useState, useEffect } from 'react'
 import { randomAddress } from 'starknet/dist/utils/stark';
 import { NetworkName, ContractType, DeployScriptContent, ProviderOptions } from './helpers/common';
