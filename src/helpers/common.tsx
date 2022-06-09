@@ -6,6 +6,12 @@ export type ContractType = {
     version: number
 }
 
+export const VoyagerBasePaths = {
+  'goerli-alpha': 'https://goerli.voyager.online/contract',
+  'mainnet-alpha': 'https://voyager.online/contract',
+  'devnet': ''
+};
+
 export type ProviderOptions = {
   network: NetworkName;
 } | {
