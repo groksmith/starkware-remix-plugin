@@ -48,11 +48,10 @@ function DeployContract(props: DeployContractProps) {
     try {
       const transactionInputs = (constructorInputs || []).map((item: any)=> constructorInputValues[item.name] || null);
       
-      const response = await provider.addTransaction({
-        type: 'DEPLOY',
-        contract_definition: compiledContract.contract_definition,
-        contract_address_salt: randomAddress(),
-        constructor_calldata: transactionInputs
+      const response = await provider.deployContract({
+        contract: compiledContract.contract_definition,
+        addressSalt: randomAddress(),
+        constructorCalldata: transactionInputs
       });
 
       setDeployedContract(response);
