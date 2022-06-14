@@ -3,8 +3,6 @@ import DeployContract from './DeployContract';
 import { createClient } from '@remixproject/plugin-webview'
 import { PluginClient } from '@remixproject/plugin'
 
-const remixClient = createClient(new PluginClient())
-
 describe("Testing Deploy Contract Component", ()=> {
 
   const props = {
