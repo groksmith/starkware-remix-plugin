@@ -1,25 +1,22 @@
 import { useState } from 'react'
 import './ContractScriptFile.css'
-import { DeployScriptContent } from '../../helpers/common'
+import { DeployScriptContent, deployScriptDirectory, defaultScriptFileName, contractDirectory } from '../../helpers/common'
 
 interface ContractScriptFileProps{
   remixClient: any,
   compiledContract: any
 }
 
-const deployScriptDirectory = './scripts';
-const defaultScriptFileName = 'deploy.js';
-const contractDirectory = 'compiled_cairo_artifacts/contract.json';
 
 function ContractScriptFile(props: ContractScriptFileProps) {
   const {remixClient, compiledContract} = props;
   const [scriptFileName, setScriptFileName] = useState(defaultScriptFileName);
   const [hasCreatedScript, setScriptStatus] = useState(false);
-
-  const deployScript = async () => {
-    await remixClient.call('fileManager', 'writeFile', contractDirectory, JSON.stringify(compiledContract));
+  
+  const createScriptFile = async () => {
     if (!scriptFileName) setScriptFileName(defaultScriptFileName);
-    remixClient.call('fileManager', 'writeFile', `${deployScriptDirectory}/${scriptFileName || defaultScriptFileName}`, DeployScriptContent).then(() => setScriptStatus(true));
+    await remixClient.call('fileManager', 'writeFile', contractDirectory, JSON.stringify(compiledContract));
+    await remixClient.call('fileManager', 'writeFile', `${deployScriptDirectory}/${scriptFileName || defaultScriptFileName}`, DeployScriptContent()).then(() => setScriptStatus(true));
   }
 
   const changeScriptFileName = (value: string) => {
@@ -31,10 +28,10 @@ function ContractScriptFile(props: ContractScriptFileProps) {
     <>
       <div className='deployScriptName'>
         <label>SCRIPT FILE NAME</label>
-        <input value={scriptFileName} placeholder={defaultScriptFileName} onChange={(event) => changeScriptFileName(event.target.value)} type="text"/>
+        <input className="scriptFileNameInput" value={scriptFileName} placeholder={defaultScriptFileName} onChange={(event) => changeScriptFileName(event.target.value)} type="text"/>
       </div>
-      {compiledContract ? <div role="button" onClick={deployScript}>Create deploy script</div> : null}
-      {hasCreatedScript ? <p>Created script at {`${deployScriptDirectory}/${scriptFileName}`}</p> : null}
+      {compiledContract ? <div role="button" className="createScriptFile" onClick={() => createScriptFile()}>Create deploy script</div> : null}
+      {hasCreatedScript ? <p className="createdScriptPath">Created script at {`${deployScriptDirectory}/${scriptFileName}`}</p> : null}
     </>
   )
 }

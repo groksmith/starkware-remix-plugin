@@ -83,8 +83,8 @@ function DeployContract(props: DeployContractProps) {
 
       {constructorInputs ? <ConstructorInputsForm inputs={constructorInputs} onInputValueChange={(data: any) => setConstructorInputValues(data)} /> : null}
 
-      <div role="button" aria-disabled={isDevnet() && !devnetBaseUrl} onClick={deployContract}>Deploy</div>
-      {deployIsLoading ? <p>Deploying...</p> : null}
+      <div role="button" className="deployContract" aria-disabled={isDevnet() && !devnetBaseUrl} onClick={deployContract}>Deploy</div>
+      {deployIsLoading ? <p className="deployingText">Deploying...</p> : null}
 
       {deployedContract && !deployIsLoading ? <ContractInfo isDevnet={isDevnet} selectedNetwork={selectedNetwork} deployedContract={deployedContract} />: null}
       {!!deploymentError &&  <Error message={deploymentError} />}

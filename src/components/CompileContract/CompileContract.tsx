@@ -3,7 +3,7 @@ import './CompileContract.css'
 import { ContractType } from '../../helpers/common';
 import Error from '../CompilationError/CompilationError';
 
-interface DeployContractProps{
+interface CompileContractProps{
   remixClient: any,
   onContractChange: any,
   onConstructorInputsChange: any
@@ -12,7 +12,7 @@ interface DeployContractProps{
 const cairoHostUrl : string = process.env.REACT_APP_CAIRO_HOST_URL || '';
 const allowedFileExtensions = ['cairo'];
 
-function CompileContract(props: DeployContractProps) {
+function CompileContract(props: CompileContractProps) {
   const {remixClient, onContractChange, onConstructorInputsChange} = props;
   const [currentFileName, setCurrentFileName] = useState('');
   const [noFileSelected, setNoFileSelected] = useState(false);
@@ -22,6 +22,7 @@ function CompileContract(props: DeployContractProps) {
   useEffect(() => {
     setTimeout(() => {
       remixClient.on('fileManager', 'currentFileChanged', (currentFileChanged: any) => {
+        console.log(currentFileChanged)
         const fileName = currentFileChanged.split('/').pop();
         const currentFileExtension = fileName.split('.').pop() || '';
         setNoFileSelected(!allowedFileExtensions.includes(currentFileExtension));
@@ -106,10 +107,10 @@ function CompileContract(props: DeployContractProps) {
 
   return (
     <>
-      <div role="button" aria-disabled={noFileSelected|| !currentFileName} onClick={compileContract}>{
+      <div role="button" className="compileContract" aria-disabled={noFileSelected|| !currentFileName} onClick={compileContract}>{
         compiling ? `Compiling ${currentFileName}...` : `Compile ${currentFileName}`
       }</div>
-      {noFileSelected  || !currentFileName ? <p>Please select file containing Cairo contract</p> : null}
+      {noFileSelected  || !currentFileName ? <p className="fileIsNotSelected">Please select file containing Cairo contract</p> : null}
       {(compilationErrorTrace) ?  <Error message={compilationErrorTrace} /> : null}
     </>
   )
