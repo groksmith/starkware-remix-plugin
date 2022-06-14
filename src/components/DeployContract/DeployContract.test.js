@@ -1,7 +1,5 @@
 import renderer from 'react-test-renderer';
 import DeployContract from './DeployContract';
-import { createClient } from '@remixproject/plugin-webview'
-import { PluginClient } from '@remixproject/plugin'
 
 describe("Testing Deploy Contract Component", ()=> {
 
