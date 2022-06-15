@@ -29,15 +29,9 @@ function DeployContract(props: DeployContractProps) {
   }
 
   const requestAddTransaction = async (payload: any) => {
-    let baseUrl = payload['baseUrl'];
+    const baseUrl = payload['network'] ? NetworkBaseUrls[payload['network']] : payload['baseUrl'];
 
-    if (payload['network']) {
-      baseUrl = NetworkBaseUrls[payload['network']];
-    }
-
-    baseUrl += '/gateway/add_transaction';
-
-    return fetch(baseUrl, {
+    return fetch(`${baseUrl}/gateway/add_transaction`, {
         method: 'POST',
         headers: {
           accept: 'application/json',
@@ -59,17 +53,18 @@ function DeployContract(props: DeployContractProps) {
     setDeploymentError(null);
     setLoading(true);
 
-    const payload: any = {};
-    payload['compiledContract'] = compiledContract;
+    const transactionInputs = (constructorInputs || []).map((item: any)=> constructorInputValues[item.name] || null);
+
+    const payload: any = {
+      compiledContract: compiledContract,
+      transactionInputs: transactionInputs
+    };
 
     if(isDevnet()) {
       payload['baseUrl'] = devnetBaseUrl;
     } else {
-      payload['network'] = selectedNetwork
+      payload['network'] = selectedNetwork;
     }
-
-    const transactionInputs = (constructorInputs || []).map((item: any)=> constructorInputValues[item.name] || null);
-    payload['transactionInputs'] = transactionInputs;
 
     try {
       const response = await requestAddTransaction(payload);
