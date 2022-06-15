@@ -6,12 +6,6 @@ export type ContractType = {
     version: number
 }
 
-export const VoyagerBasePaths = {
-  'goerli-alpha': 'https://goerli.voyager.online/contract',
-  'mainnet-alpha': 'https://voyager.online/contract',
-  'devnet': ''
-};
-
 export type ProviderOptions = {
   network: NetworkName;
 } | {
@@ -20,6 +14,16 @@ export type ProviderOptions = {
 
 export type NetworkName = 'mainnet-alpha' | 'goerli-alpha' | 'devnet';
 
+export const VoyagerBasePaths = {
+  'goerli-alpha': 'https://goerli.voyager.online/contract',
+  'mainnet-alpha': 'https://voyager.online/contract',
+  'devnet': ''
+};
+
+export const NetworkBaseUrls: any = {
+  'goerli-alpha': 'https://alpha4.starknet.io',
+  'mainnet-alpha': 'https://alpha-mainnet.starknet.io'
+}
 
 export const DeployScriptContent = () => {
   const address = randomAddress();
