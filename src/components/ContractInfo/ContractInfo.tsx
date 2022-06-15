@@ -15,8 +15,8 @@ function ContractInfo(props: ContractInfoProps) {
       <p>Deployed contract address</p>
       <p className="contractAddress">{deployedContract.address}</p>
       <p>Tx Hash</p>
-      <p className="contractAddress">{deployedContract.transaction_hash}</p>
-      {!isDevnet() ? <p><a href={`${VoyagerBasePaths[selectedNetwork]}/${deployedContract.address}`} target="_blank" rel="noreferrer" >View on Voyager</a></p> : null}
+      <p className="contractTransactionHash">{deployedContract.transaction_hash}</p>
+      {!isDevnet() ? <p><a className="viewOnVoyagerLink" href={`${VoyagerBasePaths[selectedNetwork]}/${deployedContract.address}`} target="_blank" rel="noreferrer" >View on Voyager</a></p> : null}
     </>
   )
 }

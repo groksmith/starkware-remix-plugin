@@ -11,7 +11,7 @@ const Error: React.FC<ErrorBlobProps> = (props:ErrorBlobProps): ReactElement => 
     <div className="cairoErrorBlob">
         <div className="cairoError alertDanger">
           <pre>
-            <span>{message}</span>
+            <span className="errorContent">{message}</span>
           </pre>
         </div>
     </div>

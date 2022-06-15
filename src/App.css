@@ -80,7 +80,7 @@ input {
   overflow: scroll;
 }
 
-.contractAddress {
+.contractAddress, .contractTransactionHash {
   display: flex;
   width: 80%;
   align-items: center;
