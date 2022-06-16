@@ -38,7 +38,7 @@ export const DeployScriptContent = () => {
 
           const payload = {
             compiledContract: compiledContract,
-            transactionInputs: [],
+            transactionInputs: [], // if you have constructor args please add your args
             network: 'goerli-alpha' // mainnet-alpha or goerli-alpha or devnet
           };
 
