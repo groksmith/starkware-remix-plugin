@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import './DeployContract.css'
-import { NetworkName, ProviderOptions, ContractType } from '../../helpers/common';
+import { NetworkName, ContractType } from '../../helpers/common';
+import { addTransaction } from '../../helpers/addTransaction';
 import ConstructorInputsForm from '../ConstructorInputsForm/ConstructorInputsForm';
 import ContractInfo from '../ContractInfo/ContractInfo';
-import { randomAddress } from 'starknet/dist/utils/stark';
-import { Provider, } from 'starknet';
 import Error from '../CompilationError/CompilationError';
 
 interface DeployContractProps{
@@ -28,6 +27,8 @@ function DeployContract(props: DeployContractProps) {
     setDevnetBaseUrlError(false);
   }
 
+  
+
   const deployContract = async () => {
     if(!compiledContract || (isDevnet() && !devnetBaseUrl)) return;
     if (isDevnet() && !devnetBaseUrl.startsWith('https://')) return setDevnetBaseUrlError(true);
@@ -36,38 +37,45 @@ function DeployContract(props: DeployContractProps) {
     setDeploymentError(null);
     setLoading(true);
 
-    const payload: ProviderOptions | any = {};
+    const transactionInputs = (constructorInputs || []).map((item: any)=> constructorInputValues[item.name] || null);
+
+    const payload: any = {
+      compiledContract: compiledContract,
+      transactionInputs: transactionInputs
+    };
 
     if(isDevnet()) {
       payload['baseUrl'] = devnetBaseUrl;
     } else {
-      payload['network'] = selectedNetwork
+      payload['network'] = selectedNetwork;
     }
 
-    const provider = new Provider(payload);
     try {
-      const transactionInputs = (constructorInputs || []).map((item: any)=> constructorInputValues[item.name] || null);
-      
-      const response = await provider.deployContract({
-        contract: compiledContract.contract_definition,
-        addressSalt: randomAddress(),
-        constructorCalldata: transactionInputs
-      });
+      const response = await addTransaction(payload);
+      const responseData = await response.json();
 
-      setDeployedContract(response);
-    } catch (exception: any) {
-      let errorMessage = exception.toString();
-
-      if (exception?.response?.data?.message) {
-        errorMessage = exception?.response?.data?.message;
-      } else if (errorMessage.includes('Network Error')) {
-        errorMessage = 'Error: Request failed with status code 404';
+      if(response.status === 200) {
+        setDeployedContract(responseData);
+      } else {
+        transactionDeployError(responseData);
       }
-
-      setDeploymentError(errorMessage);
+    } catch (exception: any) {
+      console.log(exception);
     }
 
     setLoading(false);
+  }
+
+  const transactionDeployError = (exception: any) => {
+    let errorMessage = exception.toString();
+
+    if (exception?.message) {
+      errorMessage = exception?.message;
+    } else if (errorMessage.includes('Network Error')) {
+      errorMessage = 'Error: Request failed with status code 404';
+    }
+
+    setDeploymentError(errorMessage);
   }
 
   return (
