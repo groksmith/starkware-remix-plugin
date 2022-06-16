@@ -107,9 +107,9 @@ function CompileContract(props: CompileContractProps) {
 
   return (
     <>
-      <div role="button" className="compileContract" aria-disabled={noFileSelected|| !currentFileName} onClick={compileContract}>{
+      <button className="compileContract btn btn-primary btn-block d-block w-100 text-break" aria-disabled={noFileSelected|| !currentFileName} onClick={compileContract}>{
         compiling ? `Compiling ${currentFileName}...` : `Compile ${currentFileName}`
-      }</div>
+      }</button>
       {noFileSelected  || !currentFileName ? <p className="fileIsNotSelected">Please select file containing Cairo contract</p> : null}
       {(compilationErrorTrace) ?  <Error message={compilationErrorTrace} /> : null}
     </>

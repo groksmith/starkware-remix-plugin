@@ -28,9 +28,9 @@ function ContractScriptFile(props: ContractScriptFileProps) {
     <>
       <div className='deployScriptName'>
         <label>SCRIPT FILE NAME</label>
-        <input className="scriptFileNameInput" value={scriptFileName} placeholder={defaultScriptFileName} onChange={(event) => changeScriptFileName(event.target.value)} type="text"/>
+        <input className="scriptFileNameInput form-control" value={scriptFileName} placeholder={defaultScriptFileName} onChange={(event) => changeScriptFileName(event.target.value)} type="text"/>
       </div>
-      {compiledContract ? <div role="button" className="createScriptFile" onClick={() => createScriptFile()}>Create deploy script</div> : null}
+      {compiledContract ? <button className="createScriptFile btn btn-primary btn-block d-block w-100 text-break" onClick={() => createScriptFile()}>Create deploy script</button> : null}
       {hasCreatedScript ? <p className="createdScriptPath">Created script at {`${deployScriptDirectory}/${scriptFileName}`}</p> : null}
     </>
   )
