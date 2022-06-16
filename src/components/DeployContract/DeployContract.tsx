@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import './DeployContract.css'
-import { NetworkName, ProviderOptions, ContractType, NetworkBaseUrls } from '../../helpers/common';
+import { NetworkName, ContractType, NetworkBaseUrls } from '../../helpers/common';
 import ConstructorInputsForm from '../ConstructorInputsForm/ConstructorInputsForm';
 import ContractInfo from '../ContractInfo/ContractInfo';
 import { randomAddress } from 'starknet/dist/utils/stark';
-import { Provider, } from 'starknet';
 import Error from '../CompilationError/CompilationError';
 
 interface DeployContractProps{
