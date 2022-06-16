@@ -15,18 +15,13 @@ const remixClient = createClient(new PluginClient())
 function App() {
   const [compiledContract, setContract] = useState<ContractType | null>(null);
   const [constructorInputs, setConstructorInputs] = useState(null);
-  const [dynamicStyleUrl, setDynamicStyleUrl] = useState('');
+  const [dynamicStyleUrl, setDynamicStyleUrl] = useState<string | undefined>('');
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkName>('goerli-alpha');
   const isDevnet = () => selectedNetwork === 'devnet';
 
-  const setAppTheme = (data: any) => {
-    setDynamicStyleUrl(data.url);
-    console.log(data)
-  }
-
   useEffect(() => {
     setTimeout(() => {
-      remixClient.theme.on('themeChanged', setAppTheme);
+      remixClient.theme.on('themeChanged', ({url}) => setDynamicStyleUrl(url));
     }, 1000)
   }, [])
 
