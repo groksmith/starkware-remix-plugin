@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import './DeployContract.css'
-import { NetworkName, ProviderOptions, ContractType, NetworkBaseUrls } from '../../helpers/common';
+import { NetworkName, ContractType } from '../../helpers/common';
+import { addTransaction } from '../../helpers/addTransaction';
 import ConstructorInputsForm from '../ConstructorInputsForm/ConstructorInputsForm';
 import ContractInfo from '../ContractInfo/ContractInfo';
-import { randomAddress } from 'starknet/dist/utils/stark';
-import { Provider, } from 'starknet';
 import Error from '../CompilationError/CompilationError';
 
 interface DeployContractProps{
@@ -28,22 +27,7 @@ function DeployContract(props: DeployContractProps) {
     setDevnetBaseUrlError(false);
   }
 
-  const requestAddTransaction = async (payload: any) => {
-    const baseUrl = payload['network'] ? NetworkBaseUrls[payload['network']] : payload['baseUrl'];
-
-    return fetch(`${baseUrl}/gateway/add_transaction`, {
-        method: 'POST',
-        headers: {
-          accept: 'application/json',
-        },
-        body: JSON.stringify({
-          type: 'DEPLOY',
-          contract_address_salt: randomAddress(),
-          contract_definition: payload.compiledContract.contract_definition,
-          constructor_calldata: payload.transactionInputs
-        })
-      })
-  }
+  
 
   const deployContract = async () => {
     if(!compiledContract || (isDevnet() && !devnetBaseUrl)) return;
@@ -67,7 +51,7 @@ function DeployContract(props: DeployContractProps) {
     }
 
     try {
-      const response = await requestAddTransaction(payload);
+      const response = await addTransaction(payload);
       const responseData = await response.json();
 
       if(response.status === 200) {
