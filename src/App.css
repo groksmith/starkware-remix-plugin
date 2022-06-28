@@ -16,6 +16,10 @@
   padding: 0.5em
 }
 
+[aria-disabled="true"] {
+  opacity: 0.5;
+}
+
 label {
   margin-bottom: 2px;
   font-size: 11px;
@@ -76,7 +80,7 @@ input {
   overflow: scroll;
 }
 
-.contractAddress {
+.contractAddress, .contractTransactionHash {
   display: flex;
   width: 80%;
   align-items: center;
