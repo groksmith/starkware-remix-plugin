@@ -22,7 +22,7 @@ function ConstructorInputsForm(props: ConstructorInputsFormProps) {
       {inputs.map((input: any)=>(
         <div className="constructorInput" key={input.name}>
           <label className="argumentLabel">{input.name}: {input.type}</label>
-          <input type="text" value={inputValues[input.name] || ''} onChange={(event) => storeInputValue(event.target.value, input.name)}></input>
+          <input className="form-control" type="text" value={inputValues[input.name] || ''} onChange={(event) => storeInputValue(event.target.value, input.name)}></input>
         </div>
       ))}
     </div>  
