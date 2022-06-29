@@ -39,6 +39,7 @@ function CompileContract(props: CompileContractProps) {
 
     if (isNaN(row) || isNaN(column)) return;
     await remixClient.editor.addAnnotation({ row: row-1, column: column, text: error, type: 'error' });
+    await remixClient.editor.gotoLine(row-1, column);
   }
 
   const compileContract = async () => {
