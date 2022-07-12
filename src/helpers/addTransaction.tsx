@@ -16,7 +16,7 @@ export const addTransaction = async (payload: any) => {
       body: JSON.stringify({
         type: 'DEPLOY',
         contract_address_salt: randomAddress(),
-        contract_definition: payload.compiledContract.contract_definition,
+        contract_definition: payload.compiledContract,
         constructor_calldata: payload.transactionInputs
       })
     })

@@ -23,13 +23,13 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: yarn build
         env:
-          REACT_APP_CAIRO_HOST_URL: https://2uuf49xjkk.execute-api.us-east-2.amazonaws.com/prod/cairo
+          REACT_APP_CAIRO_HOST_URL: https://starkware.fun
 
       - name: Build the project for development
         if: github.ref == 'refs/heads/develop'
         run: yarn build
         env:
-          REACT_APP_CAIRO_HOST_URL: https://2uuf49xjkk.execute-api.us-east-2.amazonaws.com/prod/cairo
+          REACT_APP_CAIRO_HOST_URL: https://starkware.fun
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1

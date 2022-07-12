@@ -1,9 +1,13 @@
 import { CompiledContract } from 'starknet';
 import { randomAddress } from 'starknet/dist/utils/stark';
 
+export interface Pojo {
+    [key: string]: any;
+}
+
 export type ContractType = {
-    contract_definition: CompiledContract,
-    version: number
+    contract_class: CompiledContract,
+    abi: Pojo[]
 }
 
 export type ProviderOptions = {
@@ -52,7 +56,7 @@ export const DeployScriptContent = () => {
               body: JSON.stringify({
                 type: 'DEPLOY',
                 contract_address_salt: '${address}',
-                contract_definition: payload.compiledContract.contract_definition,
+                contract_definition: payload.compiledContract,
                 constructor_calldata: payload.transactionInputs
               })
             });

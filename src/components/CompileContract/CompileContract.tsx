@@ -75,13 +75,12 @@ function CompileContract(props: CompileContractProps) {
   const runContractCompilation = async (currentFileContent: string) => {
     await remixClient.editor.clearAnnotations();
     try {
-      const response = await fetch(cairoHostUrl, {
+      const response = await fetch(`${cairoHostUrl}/compile`, {
         method: 'POST',
         headers: {
-          accept: 'application/json',
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          action: "compile-contract",
           code: currentFileContent
         })
       });
@@ -101,7 +100,7 @@ function CompileContract(props: CompileContractProps) {
   }
 
   const defineConstructorInputs = (contractData: ContractType) => {
-    const constructorResponse: any = contractData.contract_definition.abi.find(item=>item.name === "constructor");
+    const constructorResponse: any = contractData.abi.find(item=>item.name === "constructor");
     if (!constructorResponse || !constructorResponse?.inputs?.length) return;
     onConstructorInputsChange(constructorResponse.inputs);
   }
