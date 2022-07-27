@@ -84,14 +84,14 @@ function DeployContract(props: DeployContractProps) {
         isDevnet() &&
         <div className='devnetBaseUrl'>
           <label>Devnet URL</label>
-            <input value={devnetBaseUrl} onChange={(event) => devnetUrlChange(event.target.value)} type="text"/>
+            <input value={devnetBaseUrl} className="form-control" onChange={(event) => devnetUrlChange(event.target.value)} type="text"/>
             {(devnetBaseUrlError) ?  <Error message="Please check Devnet URL: The url should be only with https protocol" /> : null}
         </div>
       }
 
       {constructorInputs ? <ConstructorInputsForm inputs={constructorInputs} onInputValueChange={(data: any) => setConstructorInputValues(data)} /> : null}
 
-      <div role="button" className="deployContract" aria-disabled={isDevnet() && !devnetBaseUrl} onClick={deployContract}>Deploy</div>
+      <button className="deployContract btn btn-primary btn-block d-block w-100 text-break" aria-disabled={isDevnet() && !devnetBaseUrl} onClick={deployContract}>Deploy</button>
       {deployIsLoading ? <p className="deployingText">Deploying...</p> : null}
 
       {deployedContract && !deployIsLoading ? <ContractInfo isDevnet={isDevnet} selectedNetwork={selectedNetwork} deployedContract={deployedContract} />: null}
