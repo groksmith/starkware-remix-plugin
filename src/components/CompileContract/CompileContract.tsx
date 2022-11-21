@@ -68,7 +68,12 @@ function CompileContract(props: CompileContractProps) {
     const currentFileContent = await remixClient.call('fileManager', 'readFile', currentFile);
 
     setCompilingStatus(true);
-    runContractCompilation(currentFileContent);
+    if(currentFileContent.includes("%lang starknet")) {
+      runContractCompilation(currentFileContent);
+    } else  {
+      setCompilationError('Error: code:1:1: The "%lang starknet" directive is missing. \n Only StarkNet contracts can be compiled.')
+      setCompilingStatus(false)
+    }
   }
 
   const runContractCompilation = async (currentFileContent: string) => {
